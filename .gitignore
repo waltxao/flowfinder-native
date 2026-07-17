@@ -1,0 +1,19 @@
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# Swift / Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
