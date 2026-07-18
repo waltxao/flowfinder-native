@@ -29,9 +29,9 @@ private class DirectoryMonitor {
             },
             &context,
             pathsToWatch,
-            FSEventStreamEventFlags(kFSEventStreamEventIdSinceNow),
+            FSEventStreamEventId(kFSEventStreamEventIdSinceNow),
             0.5,
-            kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagFileEvents
+            FSEventStreamCreateFlags(kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagFileEvents)
         )
 
         if let stream = stream {
@@ -200,6 +200,15 @@ public class MainWindowController: NSWindowController {
                 self?.showError(message: errorMessage)
             }
             .store(in: &cancellables)
+
+        NotificationCenter.default.addObserver(
+            forName: .sidebarDidSelectDirectory,
+            object: nil,
+            queue: nil
+        ) { [weak self] notification in
+            guard let entry = notification.object as? FileEntry else { return }
+            self?.viewModel.navigateToEntry(entry)
+        }
     }
 
     private func loadInitialDirectory() {
@@ -402,17 +411,6 @@ extension MainWindowController: NSToolbarDelegate {
                 }
             }
         )
-    }
-}
-
-// MARK: - NSWindowRestoration
-
-extension MainWindowController: NSWindowRestoration {
-    public static func restoreWindow(withIdentifier identifier: NSUserInterfaceItemIdentifier,
-                                      state: NSCoder,
-                                      completionHandler: @escaping (NSWindow?, Error?) -> Void) {
-        let controller = MainWindowController()
-        completionHandler(controller.window, nil)
     }
 }
 

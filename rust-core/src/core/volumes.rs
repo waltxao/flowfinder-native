@@ -32,7 +32,7 @@ pub enum VolumeType {
 }
 
 impl VolumeType {
-    fn from_str(s: &str) -> Self {
+    pub fn from_str(s: &str) -> Self {
         match s.to_lowercase().as_str() {
             "apfs" => VolumeType::APFS,
             "hfs+" | "hfs" | "hfs plus" => VolumeType::HFSPlus,
@@ -43,7 +43,7 @@ impl VolumeType {
         }
     }
 
-    fn as_str(&self) -> &'static str {
+    pub fn as_str(&self) -> &'static str {
         match self {
             VolumeType::APFS => "APFS",
             VolumeType::HFSPlus => "HFS+",
@@ -94,12 +94,13 @@ pub struct VolumeHealth {
 pub struct VolumeManager;
 
 impl VolumeManager {
-    fn new() -> Self {
-        VolumeManager
+    /// Create a new volume manager instance
+    pub fn new() -> Self {
+        Self
     }
 
     /// List all mounted volumes
-    fn list_volumes(&self) -> Vec<VolumeInfo> {
+    pub fn list_volumes(&self) -> Vec<VolumeInfo> {
         let mut volumes = Vec::new();
 
         // Get mounted volumes using mount command
@@ -116,7 +117,7 @@ impl VolumeManager {
     }
 
     /// Parse a single mount line
-    fn parse_mount_line(&self, line: &str) -> Option<VolumeInfo> {
+    pub fn parse_mount_line(&self, line: &str) -> Option<VolumeInfo> {
         let parts: Vec<&str> = line.split_whitespace().collect();
         if parts.len() < 3 {
             return None;
@@ -165,7 +166,7 @@ impl VolumeManager {
     }
 
     /// Get volume size information
-    fn get_volume_size(&self, path: &str) -> (u64, u64, u64) {
+    pub fn get_volume_size(&self, path: &str) -> (u64, u64, u64) {
         if let Ok(output) = std::process::Command::new("df")
             .args(&["-k", path])
             .output()
@@ -188,13 +189,13 @@ impl VolumeManager {
     }
 
     /// Get detailed volume info
-    fn get_volume_info(&self, path: &str) -> Option<VolumeInfo> {
+    pub fn get_volume_info(&self, path: &str) -> Option<VolumeInfo> {
         let volumes = self.list_volumes();
         volumes.into_iter().find(|v| v.path == path || v.mount_point == path)
     }
 
     /// Perform health check on a volume
-    fn check_health(&self, path: &str) -> VolumeHealth {
+    pub fn check_health(&self, path: &str) -> VolumeHealth {
         let mut health = VolumeHealth {
             path: path.to_string(),
             overall_status: "Unknown".to_string(),
@@ -245,13 +246,13 @@ impl VolumeManager {
     }
 
     /// Check if SMART is available for a volume
-    fn check_smart_available(&self, _path: &str) -> bool {
+    pub fn check_smart_available(&self, _path: &str) -> bool {
         // Simplified check - in production would use diskutil or smartctl
         false
     }
 
     /// Eject a volume
-    fn eject_volume(&self, path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn eject_volume(&self, path: &str) -> Result<(), Box<dyn std::error::Error>> {
         let output = std::process::Command::new("diskutil")
             .args(&["eject", path])
             .output()?;
@@ -264,7 +265,7 @@ impl VolumeManager {
     }
 
     /// Mount a network volume
-    fn mount_network_volume(&self, path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn mount_network_volume(&self, path: &str) -> Result<(), Box<dyn std::error::Error>> {
         let output = std::process::Command::new("mount")
             .arg(path)
             .output()?;

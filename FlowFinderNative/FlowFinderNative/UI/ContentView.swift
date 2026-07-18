@@ -1,66 +1,95 @@
 import Cocoa
-import SwiftUI
+import Combine
 
-// MARK: - NSSplitView Representable
+// MARK: - Breadcrumb View
 
-/// NSSplitView wrapper for SwiftUI integration
-public struct SplitViewRepresentable: NSViewRepresentable {
-    let leftView: AnyView
-    let rightView: AnyView
-    var sidebarWidth: CGFloat = 220
+public class BreadcrumbView: NSView {
+    private var pathComponents: [String] = []
+    private var onNavigate: ((String) -> Void)?
 
-    public func makeNSView(context: Context) -> NSSplitView {
-        let splitView = NSSplitView()
-        splitView.isVertical = true
-        splitView.dividerStyle = .thin
-        splitView.autosaveName = "MainSplitView"
-
-        // Left sidebar container
-        let leftContainer = NSView()
-        leftContainer.translatesAutoresizingMaskIntoConstraints = false
-
-        // Right content container
-        let rightContainer = NSView()
-        rightContainer.translatesAutoresizingMaskIntoConstraints = false
-
-        splitView.addArrangedSubview(leftContainer)
-        splitView.addArrangedSubview(rightContainer)
-
-        // Set sidebar width constraints
-        leftContainer.widthAnchor.constraint(greaterThanOrEqualToConstant: 150).isActive = true
-        leftContainer.widthAnchor.constraint(lessThanOrEqualToConstant: 400).isActive = true
-
-        // Set holding priorities to prevent unwanted resizing
-        splitView.setHoldingPriority(.defaultLow, forSubviewAt: 0)
-        splitView.setHoldingPriority(.defaultHigh, forSubviewAt: 1)
-
-        // Embed SwiftUI views
-        let leftHostingView = NSHostingView(rootView: leftView)
-        leftHostingView.translatesAutoresizingMaskIntoConstraints = false
-        leftContainer.addSubview(leftHostingView)
-
-        let rightHostingView = NSHostingView(rootView: rightView)
-        rightHostingView.translatesAutoresizingMaskIntoConstraints = false
-        rightContainer.addSubview(rightHostingView)
-
-        // Layout constraints for hosting views
-        NSLayoutConstraint.activate([
-            leftHostingView.topAnchor.constraint(equalTo: leftContainer.topAnchor),
-            leftHostingView.leadingAnchor.constraint(equalTo: leftContainer.leadingAnchor),
-            leftHostingView.trailingAnchor.constraint(equalTo: leftContainer.trailingAnchor),
-            leftHostingView.bottomAnchor.constraint(equalTo: leftContainer.bottomAnchor),
-
-            rightHostingView.topAnchor.constraint(equalTo: rightContainer.topAnchor),
-            rightHostingView.leadingAnchor.constraint(equalTo: rightContainer.leadingAnchor),
-            rightHostingView.trailingAnchor.constraint(equalTo: rightContainer.trailingAnchor),
-            rightHostingView.bottomAnchor.constraint(equalTo: rightContainer.bottomAnchor)
-        ])
-
-        return splitView
+    public var path: String = "" {
+        didSet {
+            updateComponents()
+            needsDisplay = true
+        }
     }
 
-    public func updateNSView(_ nsView: NSSplitView, context: Context) {
-        // Update if needed
+    public var onNavigateToPath: ((String) -> Void)? {
+        didSet {
+            self.onNavigate = onNavigateToPath
+        }
+    }
+
+    private func updateComponents() {
+        pathComponents = path.split(separator: "/").map(String.init)
+        if path.hasPrefix("/") {
+            pathComponents.insert("/", at: 0)
+        }
+    }
+
+    public override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+
+        var x: CGFloat = 8
+        let y: CGFloat = 4
+        let height = bounds.height - 8
+
+        for (index, component) in pathComponents.enumerated() {
+            let isLast = index == pathComponents.count - 1
+
+            let text = component.isEmpty ? "/" : component
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: NSFont.systemFont(ofSize: NSFont.systemFontSize),
+                .foregroundColor: isLast ? NSColor.controlTextColor : NSColor.systemBlue
+            ]
+
+            let size = text.size(withAttributes: attributes)
+            let rect = NSRect(x: x, y: y, width: size.width, height: height)
+
+            text.draw(in: rect, withAttributes: attributes)
+
+            x += size.width + 4
+
+            if !isLast {
+                let separator = "/"
+                let sepSize = separator.size(withAttributes: attributes)
+                let sepRect = NSRect(x: x, y: y, width: sepSize.width, height: height)
+                separator.draw(in: sepRect, withAttributes: attributes)
+                x += sepSize.width + 4
+            }
+        }
+    }
+
+    public override func mouseDown(with event: NSEvent) {
+        let location = convert(event.locationInWindow, from: nil)
+        var x: CGFloat = 8
+        let y: CGFloat = 4
+        let height = bounds.height - 8
+
+        for (index, component) in pathComponents.enumerated() {
+            let isLast = index == pathComponents.count - 1
+            let text = component.isEmpty ? "/" : component
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: NSFont.systemFont(ofSize: NSFont.systemFontSize),
+                .foregroundColor: isLast ? NSColor.controlTextColor : NSColor.systemBlue
+            ]
+
+            let size = text.size(withAttributes: attributes)
+
+            if location.x >= x && location.x <= x + size.width {
+                let targetPath = "/" + pathComponents[1...index].joined(separator: "/")
+                onNavigate?(targetPath)
+                return
+            }
+
+            x += size.width + 4
+
+            if !isLast {
+                let separator = "/"
+                let sepSize = separator.size(withAttributes: attributes)
+                x += sepSize.width + 4
+            }
+        }
     }
 }
 
@@ -71,7 +100,9 @@ public class ContentView: NSView {
     private var splitView: NSSplitView!
     private var sidebarView: NSView!
     private var fileListView: FileListView!
+    private var breadcrumbView: BreadcrumbView!
     private var viewModel: FileEntryViewModel?
+    private var cancellables = Set<AnyCancellable>()
 
     public var onNavigate: ((FileEntry) -> Void)?
 
@@ -86,6 +117,11 @@ public class ContentView: NSView {
     }
 
     private func setupUI() {
+        // Breadcrumb view
+        breadcrumbView = BreadcrumbView(frame: NSRect(x: 0, y: 0, width: frame.width, height: 24))
+        breadcrumbView.autoresizingMask = [.width, .minYMargin]
+        addSubview(breadcrumbView)
+
         // Split view setup
         splitView = NSSplitView()
         splitView.isVertical = true
@@ -120,7 +156,12 @@ public class ContentView: NSView {
 
         // Main layout constraints
         NSLayoutConstraint.activate([
-            splitView.topAnchor.constraint(equalTo: topAnchor),
+            breadcrumbView.topAnchor.constraint(equalTo: topAnchor),
+            breadcrumbView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            breadcrumbView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            breadcrumbView.heightAnchor.constraint(equalToConstant: 24),
+
+            splitView.topAnchor.constraint(equalTo: breadcrumbView.bottomAnchor),
             splitView.leadingAnchor.constraint(equalTo: leadingAnchor),
             splitView.trailingAnchor.constraint(equalTo: trailingAnchor),
             splitView.bottomAnchor.constraint(equalTo: bottomAnchor)
@@ -132,6 +173,17 @@ public class ContentView: NSView {
         self.viewModel = viewModel
         fileListView.viewModel = viewModel
         fileListView.reloadData()
+
+        viewModel.$currentPath
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] path in
+                self?.breadcrumbView.path = path ?? ""
+            }
+            .store(in: &cancellables)
+
+        breadcrumbView.onNavigateToPath = { [weak self] path in
+            self?.viewModel?.navigateToPath(path)
+        }
     }
 
     /// Reload file list data
@@ -142,29 +194,5 @@ public class ContentView: NSView {
     public override func resizeSubviews(withOldSize oldSize: NSSize) {
         super.resizeSubviews(withOldSize: oldSize)
         splitView.frame = bounds
-    }
-}
-
-// MARK: - Content View Representable
-
-/// SwiftUI representable wrapper for ContentView
-public struct ContentViewRepresentable: NSViewRepresentable {
-    @ObservedObject var viewModel: FileEntryViewModel
-
-    public func makeNSView(context: Context) -> ContentView {
-        let view = ContentView()
-        view.setViewModel(viewModel)
-        view.onNavigate = { entry in
-            viewModel.navigateToEntry(entry)
-        }
-        return view
-    }
-
-    public func updateNSView(_ nsView: ContentView, context: Context) {
-        nsView.setViewModel(viewModel)
-        nsView.onNavigate = { entry in
-            viewModel.navigateToEntry(entry)
-        }
-        nsView.reloadFileList()
     }
 }

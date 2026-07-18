@@ -1,5 +1,4 @@
 import Cocoa
-import SwiftUI
 import QuickLook
 
 // MARK: - Search Bar View
@@ -9,7 +8,6 @@ public class SearchBarView: NSView {
 
     private var searchField: NSSearchField!
     private var filterButton: NSButton!
-    private var filterPopover: NSPopover?
 
     public var onSearch: ((String) -> Void)?
     public var onFilterChanged: ((SearchFilters) -> Void)?
@@ -59,100 +57,8 @@ public class SearchBarView: NSView {
     }
 
     @objc private func showFilterPopover() {
-        // Show filter options popover
-        let filterView = FilterOptionsView()
-        filterView.onFilterChanged = { [weak self] filters in
-            self?.onFilterChanged?(filters)
-        }
-
-        let hostingController = NSHostingController(rootView: filterView)
-        filterPopover = NSPopover()
-        filterPopover?.contentViewController = hostingController
-        filterPopover?.show(relativeTo: filterButton.bounds, of: filterButton, preferredEdge: .maxY)
-    }
-}
-
-// MARK: - Filter Options View
-
-/// SwiftUI view for search filter options
-public struct FilterOptionsView: View {
-
-    @State private var selectedFileTypes: Set<String> = []
-    @State private var minSize: String = ""
-    @State private var maxSize: String = ""
-    @State private var modifiedAfter: Date?
-    @State private var modifiedBefore: Date?
-
-    public var onFilterChanged: ((SearchFilters) -> Void)?
-
-    private let fileTypeOptions = ["Images", "Documents", "Audio", "Video", "Archives"]
-
-    public var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("File Types")
-                .font(.headline)
-
-            FlowLayout(spacing: 8) {
-                ForEach(fileTypeOptions, id: \.self) { type in
-                    Toggle(type, isOn: Binding(
-                        get: { selectedFileTypes.contains(type) },
-                        set: { isSelected in
-                            if isSelected {
-                                selectedFileTypes.insert(type)
-                            } else {
-                                selectedFileTypes.remove(type)
-                            }
-                            notifyFilterChanged()
-                        }
-                    ))
-                }
-            }
-
-            Divider()
-
-            Text("Size")
-                .font(.headline)
-
-            HStack {
-                TextField("Min Size (bytes)", text: $minSize)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .frame(width: 120)
-
-                Text("to")
-
-                TextField("Max Size (bytes)", text: $maxSize)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .frame(width: 120)
-            }
-
-            Divider()
-
-            Text("Modified Date")
-                .font(.headline)
-
-            HStack {
-                DatePicker("After", selection: Binding(
-                    get: { modifiedAfter ?? Date() },
-                    set: { modifiedAfter = $0; notifyFilterChanged() }
-                ), displayedComponents: .date)
-
-                DatePicker("Before", selection: Binding(
-                    get: { modifiedBefore ?? Date() },
-                    set: { modifiedBefore = $0; notifyFilterChanged() }
-                ), displayedComponents: .date)
-            }
-        }
-        .padding()
-        .frame(width: 350)
-    }
-
-    private func notifyFilterChanged() {
-        let filters = SearchFilters(
-            fileTypes: selectedFileTypes.isEmpty ? nil : selectedFileTypes.joined(separator: ","),
-            minSize: UInt64(minSize),
-            maxSize: UInt64(maxSize)
-        )
-        onFilterChanged?(filters)
+        // Filter popover disabled in AppKit-only build
+        onFilterChanged?(SearchFilters())
     }
 }
 
@@ -173,54 +79,6 @@ public struct SearchFilters {
         self.maxSize = maxSize
         self.modifiedAfter = modifiedAfter
         self.modifiedBefore = modifiedBefore
-    }
-}
-
-// MARK: - Flow Layout
-
-/// A simple flow layout for SwiftUI
-public struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    public func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let result = FlowResult(in: proposal.width ?? 0, subviews: subviews, spacing: spacing)
-        return result.size
-    }
-
-    public func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let result = FlowResult(in: bounds.width, subviews: subviews, spacing: spacing)
-        for (index, subview) in subviews.enumerated() {
-            if index < result.positions.count {
-                subview.place(at: CGPoint(x: bounds.minX + result.positions[index].x,
-                                          y: bounds.minY + result.positions[index].y),
-                              proposal: .unspecified)
-            }
-        }
-    }
-
-    private struct FlowResult {
-        var size: CGSize = .zero
-        var positions: [CGPoint] = []
-
-        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
-            var x: CGFloat = 0
-            var y: CGFloat = 0
-            var lineHeight: CGFloat = 0
-
-            for subview in subviews {
-                let size = subview.sizeThatFits(.unspecified)
-                if x + size.width > maxWidth && x > 0 {
-                    x = 0
-                    y += lineHeight + spacing
-                    lineHeight = 0
-                }
-                positions.append(CGPoint(x: x, y: y))
-                x += size.width + spacing
-                lineHeight = max(lineHeight, size.height)
-            }
-
-            self.size = CGSize(width: maxWidth, height: y + lineHeight)
-        }
     }
 }
 

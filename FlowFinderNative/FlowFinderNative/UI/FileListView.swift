@@ -1,27 +1,5 @@
 import Cocoa
-import SwiftUI
 import Combine
-
-// MARK: - NSViewRepresentable Wrapper
-
-/// SwiftUI  Representable wrapper for the file list NSTableView
-public struct FileListViewRepresentable: NSViewRepresentable {
-    @ObservedObject var viewModel: FileEntryViewModel
-    var onDoubleClick: ((FileEntry) -> Void)?
-
-    public func makeNSView(context: Context) -> FileListView {
-        let view = FileListView()
-        view.viewModel = viewModel
-        view.onDoubleClick = onDoubleClick
-        return view
-    }
-
-    public func updateNSView(_ nsView: FileListView, context: Context) {
-        nsView.viewModel = viewModel
-        nsView.onDoubleClick = onDoubleClick
-        nsView.reloadData()
-    }
-}
 
 // MARK: - File List View
 
@@ -191,6 +169,29 @@ public class FileListView: NSView {
         // Additional shortcuts can be registered via NSResponder
     }
 
+    public override func keyDown(with event: NSEvent) {
+        guard let characters = event.charactersIgnoringModifiers else {
+            super.keyDown(with: event)
+            return
+        }
+
+        if characters == " " {
+            handleQuickLook()
+            return
+        }
+
+        super.keyDown(with: event)
+    }
+
+    private func handleQuickLook() {
+        guard let entry = selectedEntry else { return }
+
+        let path = entry.path
+        if QuickLookBridge.shared.canPreview(path: path) {
+            QuickLookBridge.shared.show(paths: [path])
+        }
+    }
+
     // MARK: - Context Menu Actions
 
     @objc private func copySelectedFile(_ sender: Any?) {
@@ -208,12 +209,12 @@ public class FileListView: NSView {
                     do {
                         try CoreBridge.shared.copyFile(src: entry.path, dst: url.path)
                         DispatchQueue.main.async {
-                            progress.close()
+                            progress.stopAnimation(nil)
                             self?.viewModel?.refresh()
                         }
                     } catch {
                         DispatchQueue.main.async {
-                            progress.close()
+                            progress.stopAnimation(nil)
                             self?.showErrorAlert(error: error)
                         }
                     }
@@ -237,12 +238,12 @@ public class FileListView: NSView {
                     do {
                         try CoreBridge.shared.moveFile(src: entry.path, dst: url.path)
                         DispatchQueue.main.async {
-                            progress.close()
+                            progress.stopAnimation(nil)
                             self?.viewModel?.refresh()
                         }
                     } catch {
                         DispatchQueue.main.async {
-                            progress.close()
+                            progress.stopAnimation(nil)
                             self?.showErrorAlert(error: error)
                         }
                     }
@@ -279,12 +280,12 @@ public class FileListView: NSView {
                     do {
                         try CoreBridge.shared.renameFile(src: entry.path, dst: newPath)
                         DispatchQueue.main.async {
-                            progress.close()
+                            progress.stopAnimation(nil)
                             self?.viewModel?.refresh()
                         }
                     } catch {
                         DispatchQueue.main.async {
-                            progress.close()
+                            progress.stopAnimation(nil)
                             self?.showErrorAlert(error: error)
                         }
                     }
@@ -315,12 +316,12 @@ public class FileListView: NSView {
                             try CoreBridge.shared.deleteFile(path: entry.path)
                         }
                         DispatchQueue.main.async {
-                            progress.close()
+                            progress.stopAnimation(nil)
                             self?.viewModel?.refresh()
                         }
                     } catch {
                         DispatchQueue.main.async {
-                            progress.close()
+                            progress.stopAnimation(nil)
                             self?.showErrorAlert(error: error)
                         }
                     }
@@ -357,12 +358,12 @@ public class FileListView: NSView {
                     do {
                         try CoreBridge.shared.createDirectory(path: newPath)
                         DispatchQueue.main.async {
-                            progress.close()
+                            progress.stopAnimation(nil)
                             self?.viewModel?.refresh()
                         }
                     } catch {
                         DispatchQueue.main.async {
-                            progress.close()
+                            progress.stopAnimation(nil)
                             self?.showErrorAlert(error: error)
                         }
                     }

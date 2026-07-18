@@ -31,9 +31,9 @@ public struct TaskInfo: Identifiable, Equatable, Hashable {
     /// Initialize from FFI reference
     /// - Parameter ref: FFTaskInfo structure from Rust core
     public init(from ref: FFTaskInfo) {
-        self.id = String(cString: ref.id)
-        self.name = String(cString: ref.name)
-        self.description = String(cString: ref.description)
+        self.id = String(cString: ref.id!)
+        self.name = String(cString: ref.name!)
+        self.description = String(cString: ref.description!)
         self.priority = TaskPriority(rawValue: ref.priority) ?? .normal
         self.status = TaskStatus(rawValue: ref.status) ?? .pending
         self.progress = ref.progress

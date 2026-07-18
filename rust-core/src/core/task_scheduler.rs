@@ -38,7 +38,7 @@ pub enum TaskType {
 }
 
 impl TaskType {
-    fn from_str(s: &str) -> Option<Self> {
+    pub fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "copy" => Some(TaskType::Copy),
             "move" => Some(TaskType::Move),
@@ -49,7 +49,7 @@ impl TaskType {
         }
     }
 
-    fn as_str(&self) -> &'static str {
+    pub fn as_str(&self) -> &'static str {
         match self {
             TaskType::Copy => "Copy",
             TaskType::Move => "Move",
@@ -72,7 +72,7 @@ pub enum TaskPriority {
 }
 
 impl TaskPriority {
-    fn from_i32(v: i32) -> Self {
+    pub fn from_i32(v: i32) -> Self {
         match v {
             3 => TaskPriority::Critical,
             2 => TaskPriority::High,
@@ -96,7 +96,7 @@ pub enum TaskStatus {
 }
 
 impl TaskStatus {
-    fn as_str(&self) -> &'static str {
+    pub fn as_str(&self) -> &'static str {
         match self {
             TaskStatus::Pending => "Pending",
             TaskStatus::Running => "Running",
@@ -162,7 +162,7 @@ pub struct TaskScheduler {
 }
 
 impl TaskScheduler {
-    fn new() -> Self {
+    pub fn new() -> Self {
         TaskScheduler {
             next_id: AtomicUsize::new(1),
             tasks: Mutex::new(HashMap::new()),
@@ -175,7 +175,7 @@ impl TaskScheduler {
         }
     }
 
-    fn submit(&self, task_type: TaskType, priority: TaskPriority, params: HashMap<String, String>) -> u64 {
+    pub fn submit(&self, task_type: TaskType, priority: TaskPriority, params: HashMap<String, String>) -> u64 {
         let id = self.next_id.fetch_add(1, Ordering::SeqCst) as u64;
         let task = Task::new(id, task_type, priority, params);
         let task_arc = Arc::new(Mutex::new(task));
@@ -206,7 +206,7 @@ impl TaskScheduler {
         id
     }
 
-    fn cancel(&self, id: u64) -> bool {
+    pub fn cancel(&self, id: u64) -> bool {
         let tasks = self.tasks.lock().unwrap();
         if let Some(task_arc) = tasks.get(&id) {
             let mut task = task_arc.lock().unwrap();
@@ -223,7 +223,7 @@ impl TaskScheduler {
         tasks.get(&id).cloned()
     }
 
-    fn list_tasks(&self) -> Vec<Task> {
+    pub fn list_tasks(&self) -> Vec<Task> {
         let tasks = self.tasks.lock().unwrap();
         tasks.values()
             .map(|arc| arc.lock().unwrap().clone())
@@ -358,7 +358,7 @@ use std::sync::OnceLock;
 
 static SCHEDULER: OnceLock<TaskScheduler> = OnceLock::new();
 
-fn scheduler() -> &'static TaskScheduler {
+pub fn scheduler() -> &'static TaskScheduler {
     SCHEDULER.get_or_init(|| TaskScheduler::new())
 }
 

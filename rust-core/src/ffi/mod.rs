@@ -14,6 +14,7 @@
 //! - All heap-allocated strings returned to C must be freed with
 //!   `ff_free_string()`.
 
+use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_int, c_void};
 use std::ptr;
@@ -1654,6 +1655,174 @@ pub extern "C" fn ff_settings_get(key: *const c_char) -> *mut c_char {
 #[no_mangle]
 pub extern "C" fn ff_settings_set(key: *const c_char, value: *const c_char) -> c_int {
     crate::core::settings::settings_set(key, value)
+}
+
+// ── Volume Data Structures ──────────────────────────────────────────
+
+/// C-compatible volume info structure
+#[repr(C)]
+pub struct FFVolumeInfo {
+    pub name: *mut c_char,
+    pub path: *mut c_char,
+    pub fs_type: *mut c_char,
+    pub total_size: u64,
+    pub free_size: u64,
+    pub used_size: u64,
+    pub is_removable: bool,
+    pub is_ejectable: bool,
+    pub is_writable: bool,
+}
+
+/// Callback for volume list
+pub type FFVolumeCallback = extern "C" fn(
+    path: *const c_char,
+    name: *const c_char,
+    fs_type: *const c_char,
+    total_size: u64,
+    free_size: u64,
+    is_removable: bool,
+    user_data: *mut c_void,
+);
+
+/// Callback for volume info
+pub type FFVolumeInfoCallback = extern "C" fn(
+    path: *const c_char,
+    name: *const c_char,
+    fs_type: *const c_char,
+    total_size: u64,
+    used_size: u64,
+    free_size: u64,
+    filesystem: *const c_char,
+    is_removable: bool,
+    is_ejectable: bool,
+    is_network: bool,
+    user_data: *mut c_void,
+);
+
+/// Callback for health check result
+pub type FFHealthCallback = extern "C" fn(
+    path: *const c_char,
+    status: *const c_char,
+    usage_percent: f64,
+    smart_available: bool,
+    smart_status: *const c_char,
+    user_data: *mut c_void,
+);
+
+// ── Task Data Structures ────────────────────────────────────────────
+
+/// C-compatible task info structure
+#[repr(C)]
+pub struct FFTaskInfo {
+    pub id: u64,
+    pub name: *mut c_char,
+    pub description: *mut c_char,
+    pub priority: i32,
+    pub status: *mut c_char,
+    pub progress: f64,
+    pub created_at: i64,
+    pub started_at: i64,
+    pub completed_at: i64,
+}
+
+/// Callback for task list
+pub type FFTaskListCallback = extern "C" fn(
+    id: u64,
+    name: *const c_char,
+    description: *const c_char,
+    priority: i32,
+    status: *const c_char,
+    progress: f64,
+    created_at: i64,
+    started_at: i64,
+    completed_at: i64,
+    user_data: *mut c_void,
+);
+
+/// List all tasks (FFI wrapper with FFTaskInfo struct)
+///
+/// # Arguments
+/// - `callback` — Called for each task with raw task info pointer
+/// - `user_data` — Opaque pointer passed to callback
+///
+/// # Returns
+/// - `FF_OK` on success
+#[no_mangle]
+pub extern "C" fn ff_task_list_ex(
+    callback: extern "C" fn(*const FFTaskInfo, *mut c_void),
+    user_data: *mut c_void,
+) -> c_int {
+    let tasks = crate::core::task_scheduler::scheduler().list_tasks();
+
+    for task in tasks {
+        let name_c = rust_string_to_c(task.task_type.as_str().to_string());
+        let status_c = rust_string_to_c(task.status.as_str().to_string());
+
+        let ff_task = FFTaskInfo {
+            id: task.id,
+            name: name_c,
+            description: rust_string_to_c(task.params.get("description").cloned().unwrap_or_default()),
+            priority: match task.priority {
+                crate::core::task_scheduler::TaskPriority::Low => 0,
+                crate::core::task_scheduler::TaskPriority::Normal => 1,
+                crate::core::task_scheduler::TaskPriority::High => 2,
+                crate::core::task_scheduler::TaskPriority::Critical => 3,
+            },
+            status: status_c,
+            progress: task.progress,
+            created_at: task.created_at as i64,
+            started_at: task.started_at.unwrap_or(0) as i64,
+            completed_at: task.completed_at.unwrap_or(0) as i64,
+        };
+
+        callback(&ff_task, user_data);
+
+        if !name_c.is_null() { unsafe { let _ = CString::from_raw(name_c); } }
+        if !status_c.is_null() { unsafe { let _ = CString::from_raw(status_c); } }
+    }
+
+    FF_OK
+}
+
+/// Get progress for a specific task
+///
+/// # Arguments
+/// - `task_id` — NUL-terminated UTF-8 task ID string
+/// - `out_progress` — Pointer to store progress value
+///
+/// # Returns
+/// - `FF_OK` on success
+/// - `FF_ERR_NOT_FOUND` if task not found
+#[no_mangle]
+pub extern "C" fn ff_task_progress_ex(
+    task_id: *const c_char,
+    out_progress: *mut f64,
+) -> c_int {
+    if task_id.is_null() || out_progress.is_null() {
+        return FF_ERR_INVALID_PATH;
+    }
+
+    let id_str = unsafe {
+        match CStr::from_ptr(task_id).to_str() {
+            Ok(s) => s,
+            Err(_) => return FF_ERR_INVALID_PATH,
+        }
+    };
+
+    let id = match id_str.parse::<u64>() {
+        Ok(id) => id,
+        Err(_) => return FF_ERR_INVALID_PATH,
+    };
+
+    let tasks = crate::core::task_scheduler::scheduler().list_tasks();
+    if let Some(task) = tasks.iter().find(|t| t.id == id) {
+        unsafe {
+            *out_progress = task.progress;
+        }
+        FF_OK
+    } else {
+        FF_ERR_NOT_FOUND
+    }
 }
 
 // ── Tests ───────────────────────────────────────────────────────────

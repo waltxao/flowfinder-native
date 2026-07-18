@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import QuickLook
 
 // MARK: - Duplicate Scan Bridge
@@ -213,6 +214,64 @@ public final class QuickLookBridge {
             "zip"
         ]
         return supportedExtensions.contains(ext)
+    }
+
+    // MARK: - QuickLook Panel
+
+    private var previewWindow: NSWindow?
+
+    /// Show Quick Look preview for the given file paths
+    /// - Parameter paths: Array of file paths to preview
+    public func show(paths: [String]) {
+        guard !paths.isEmpty else { return }
+
+        let url = URL(fileURLWithPath: paths[0])
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            // Close existing preview window
+            self.close()
+
+            // Create a simple preview window
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 600, height: 400),
+                styleMask: [.titled, .closable, .resizable],
+                backing: .buffered,
+                defer: false
+            )
+            window.title = url.lastPathComponent
+            window.center()
+            window.makeKeyAndOrderFront(nil)
+
+            // Add a simple text view showing file info
+            let textView = NSTextView(frame: window.contentView!.bounds)
+            textView.autoresizingMask = [.width, .height]
+            textView.isEditable = false
+            textView.font = NSFont.systemFont(ofSize: 14)
+
+            let fileInfo = """
+            File: \(url.lastPathComponent)
+            Path: \(url.path)
+            Type: \(self.getFileType(path: url.path))
+
+            Note: Full Quick Look preview requires macOS Quick Look integration.
+            For beta, this shows file information instead.
+            """
+
+            textView.string = fileInfo
+            window.contentView?.addSubview(textView)
+
+            self.previewWindow = window
+        }
+    }
+
+    /// Close the Quick Look preview panel
+    public func close() {
+        DispatchQueue.main.async { [weak self] in
+            self?.previewWindow?.close()
+            self?.previewWindow = nil
+        }
     }
 }
 

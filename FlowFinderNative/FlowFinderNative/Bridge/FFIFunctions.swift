@@ -1,5 +1,33 @@
 import Foundation
 
+// MARK: - C Type Imports (from ff_ffi.h)
+
+/// C-compatible task info structure
+public struct FFTaskInfo {
+    public var id: UnsafeMutablePointer<CChar>?
+    public var name: UnsafeMutablePointer<CChar>?
+    public var description: UnsafeMutablePointer<CChar>?
+    public var priority: Int32
+    public var status: Int32
+    public var progress: Double
+    public var created_at: Int64
+    public var started_at: Int64
+    public var completed_at: Int64
+}
+
+/// C-compatible volume info structure
+public struct FFVolumeInfo {
+    public var name: UnsafeMutablePointer<CChar>?
+    public var path: UnsafeMutablePointer<CChar>?
+    public var fs_type: UnsafeMutablePointer<CChar>?
+    public var total_size: UInt64
+    public var free_size: UInt64
+    public var used_size: UInt64
+    public var is_removable: Bool
+    public var is_ejectable: Bool
+    public var is_writable: Bool
+}
+
 /// FFI entry reference structure, corresponding to Rust's ff_entry_t
 public struct FFEntryRef {
     public let path: UnsafePointer<CChar>
@@ -279,7 +307,7 @@ public func ff_dir_cache_clear() -> Int32
 // MARK: - FSEvents Watcher (Sub-project 5) FFI Declarations
 
 /// Callback type for FSEvents notifications
-public type FSEventCallback = @convention(c) (UnsafePointer<CChar>?, UnsafeMutableRawPointer?) -> Void
+public typealias FSEventCallback = @convention(c) (UnsafePointer<CChar>?, UnsafeMutableRawPointer?) -> Void
 
 /// Start watching a path for filesystem changes
 /// - Parameters:
@@ -336,6 +364,87 @@ public func ff_organize_by_date(
 @_silgen_name("ff_organize_by_type")
 public func ff_organize_by_type(_ path: UnsafePointer<CChar>) -> Int32
 
+// MARK: - Settings & Configuration (Sub-project 8) FFI Declarations
+
+/// Load settings as a JSON string
+/// - Returns: Settings JSON string (caller must free with ff_free_string)
+@_silgen_name("ff_settings_load")
+public func ff_settings_load() -> UnsafeMutablePointer<CChar>?
+
+/// Save settings from a JSON string
+/// - Parameter json: Settings JSON string (C string)
+/// - Returns: 0 on success, non-zero error code on failure
+@_silgen_name("ff_settings_save")
+public func ff_settings_save(_ json: UnsafePointer<CChar>) -> Int32
+
+/// Get a setting value by key
+/// - Parameter key: Setting key (C string)
+/// - Returns: Setting value string (caller must free with ff_free_string)
+@_silgen_name("ff_settings_get")
+public func ff_settings_get(_ key: UnsafePointer<CChar>) -> UnsafeMutablePointer<CChar>?
+
+/// Set a setting value
+/// - Parameters:
+///   - key: Setting key (C string)
+///   - value: Setting value (C string)
+/// - Returns: 0 on success, non-zero error code on failure
+@_silgen_name("ff_settings_set")
+public func ff_settings_set(_ key: UnsafePointer<CChar>, _ value: UnsafePointer<CChar>) -> Int32
+
+// MARK: - Task Scheduler (Sub-project 9) FFI Declarations
+
+/// Submit a new task
+/// - Parameters:
+///   - taskType: Task type (C string, e.g., "scan", "copy", "delete")
+///   - paramsJson: Task parameters as JSON string
+/// - Returns: 0 on success, non-zero error code on failure
+@_silgen_name("ff_task_submit")
+public func ff_task_submit(
+    _ taskType: UnsafePointer<CChar>,
+    _ paramsJson: UnsafePointer<CChar>
+) -> Int32
+
+/// Cancel a task by ID
+/// - Parameter taskId: Task ID (integer)
+/// - Returns: 0 on success, non-zero error code on failure
+@_silgen_name("ff_task_cancel")
+public func ff_task_cancel(_ taskId: Int32) -> Int32
+
+/// List all tasks
+/// - Parameters:
+///   - callback: Called for each task with individual fields
+///   - userData: User data pointer passed to callback
+/// - Returns: 0 on success, non-zero error code on failure
+@_silgen_name("ff_task_list")
+public func ff_task_list(
+    _ callback: @convention(c) (
+        _ id: UInt64,
+        _ name: UnsafePointer<CChar>?,
+        _ description: UnsafePointer<CChar>?,
+        _ priority: Int32,
+        _ status: UnsafePointer<CChar>?,
+        _ progress: Double,
+        _ createdAt: Int64,
+        _ startedAt: Int64,
+        _ completedAt: Int64,
+        _ userData: UnsafeMutableRawPointer?
+    ) -> Void,
+    _ userData: UnsafeMutableRawPointer?
+) -> Int32
+
+/// Get progress for a specific task
+/// - Parameters:
+///   - taskId: Task ID (integer)
+///   - callback: Called with task progress
+///   - userData: User data pointer passed to callback
+/// - Returns: 0 on success, non-zero error code on failure
+@_silgen_name("ff_task_progress")
+public func ff_task_progress(
+    _ taskId: Int32,
+    _ callback: @convention(c) (Int32, Double, UnsafePointer<CChar>?, UnsafeMutableRawPointer?) -> Void,
+    _ userData: UnsafeMutableRawPointer?
+) -> Int32
+
 // MARK: - Thumbnail Generation (Sub-project 7) FFI Declarations
 
 /// Generate a thumbnail for an image file
@@ -369,3 +478,56 @@ public func ff_generate_thumbnails(
     _ callback: @convention(c) (UnsafePointer<CChar>?, UnsafeMutableRawPointer?) -> Void,
     _ userData: UnsafeMutableRawPointer?
 ) -> Int32
+
+// MARK: - Volume Management (Sub-project 10) FFI Declarations
+
+/// List all mounted volumes
+/// - Parameters:
+///   - callback: Called for each volume with raw volume info pointer
+///   - userData: User data pointer passed to callback
+/// - Returns: 0 on success, non-zero error code on failure
+@_silgen_name("ff_volume_list")
+public func ff_volume_list(
+    _ callback: @convention(c) (UnsafeRawPointer?, UnsafeMutableRawPointer?) -> Void,
+    _ userData: UnsafeMutableRawPointer?
+) -> Int32
+
+/// Get detailed information for a specific volume
+/// - Parameters:
+///   - path: Volume path (C string)
+///   - callback: Called with raw volume info pointer
+///   - userData: User data pointer passed to callback
+/// - Returns: 0 on success, non-zero error code on failure
+@_silgen_name("ff_volume_info")
+public func ff_volume_info(
+    _ path: UnsafePointer<CChar>,
+    _ callback: @convention(c) (UnsafeRawPointer?, UnsafeMutableRawPointer?) -> Void,
+    _ userData: UnsafeMutableRawPointer?
+) -> Int32
+
+/// Perform a health check on a volume
+/// - Parameters:
+///   - path: Volume path (C string)
+///   - callback: Called with health check results
+///   - userData: User data pointer passed to callback
+/// - Returns: 0 on success, non-zero error code on failure
+@_silgen_name("ff_volume_health_check")
+public func ff_volume_health_check(
+    _ path: UnsafePointer<CChar>,
+    _ callback: @convention(c) (UnsafePointer<CChar>?, UnsafeMutableRawPointer?) -> Void,
+    _ userData: UnsafeMutableRawPointer?
+) -> Int32
+
+/// Eject a removable volume
+/// - Parameter path: Volume path (C string)
+/// - Returns: 0 on success, non-zero error code on failure
+@_silgen_name("ff_volume_eject")
+public func ff_volume_eject(_ path: UnsafePointer<CChar>) -> Int32
+
+/// Mount a network volume
+/// - Parameters:
+///   - path: Volume path (C string)
+///   - options: Mount options (C string, currently unused)
+/// - Returns: 0 on success, non-zero error code on failure
+@_silgen_name("ff_volume_mount")
+public func ff_volume_mount(_ path: UnsafePointer<CChar>, _ options: UnsafePointer<CChar>?) -> Int32

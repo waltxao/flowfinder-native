@@ -16,9 +16,9 @@ public struct VolumeInfo: Identifiable, Equatable, Hashable {
     /// Initialize from FFI reference
     /// - Parameter ref: FFVolumeInfo structure from Rust core
     public init(from ref: FFVolumeInfo) {
-        self.name = String(cString: ref.name)
-        self.path = String(cString: ref.path)
-        self.fsType = String(cString: ref.fsType)
+        self.name = String(cString: ref.name!)
+        self.path = String(cString: ref.path!)
+        self.fsType = String(cString: ref.fs_type!)
         self.totalSize = ref.total_size
         self.freeSize = ref.free_size
         self.usedSize = ref.used_size
