@@ -719,6 +719,340 @@ public final class CoreBridge {
     public func getLastErrorMessage() -> String {
         return lastErrorMessage.get() ?? "Unknown error"
     }
+
+    // MARK: - Settings & Configuration (Sub-project 8)
+
+    /// Load all settings as a JSON string
+    /// - Returns: Settings JSON string
+    /// - Throws: CoreBridgeError if operation fails
+    public func loadSettings() throws -> String {
+        var resultString: String = ""
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            guard let cString = ff_settings_load() else {
+                return
+            }
+            resultString = String(cString: cString)
+            ff_free_string(cString)
+        }
+
+        semaphore.wait()
+        return resultString
+    }
+
+    /// Save settings from a JSON string
+    /// - Parameter json: Settings JSON string
+    /// - Throws: CoreBridgeError if operation fails
+    public func saveSettings(json: String) throws {
+        var ffiResult: Int32 = -1
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            let result = json.withCString { cJson in
+                ff_settings_save(cJson)
+            }
+            ffiResult = result
+        }
+
+        semaphore.wait()
+
+        guard ffiResult == 0 else {
+            let errorMessage = getLastError()
+            throw CoreBridgeError.ffiError(errorMessage)
+        }
+    }
+
+    /// Get a specific setting value by key
+    /// - Parameter key: Setting key
+    /// - Returns: Setting value string, or empty if not found
+    public func getSetting(key: String) -> String {
+        var resultString: String = ""
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            guard let cString = ff_settings_get(key) else {
+                return
+            }
+            resultString = String(cString: cString)
+            ff_free_string(cString)
+        }
+
+        semaphore.wait()
+        return resultString
+    }
+
+    /// Set a specific setting value
+    /// - Parameters:
+    ///   - key: Setting key
+    ///   - value: Setting value
+    /// - Throws: CoreBridgeError if operation fails
+    public func setSetting(key: String, value: String) throws {
+        var ffiResult: Int32 = -1
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            let result = key.withCString { cKey in
+                value.withCString { cValue in
+                    ff_settings_set(cKey, cValue)
+                }
+            }
+            ffiResult = result
+        }
+
+        semaphore.wait()
+
+        guard ffiResult == 0 else {
+            let errorMessage = getLastError()
+            throw CoreBridgeError.ffiError(errorMessage)
+        }
+    }
+
+    // MARK: - Task Scheduler (Sub-project 9)
+
+    /// Submit a new task to the scheduler
+    /// - Parameters:
+    ///   - name: Task name
+    ///   - description: Task description
+    ///   - priority: Task priority (0=low, 1=normal, 2=high)
+    /// - Returns: Task ID string
+    /// - Throws: CoreBridgeError if operation fails
+    public func submitTask(name: String, description: String, priority: Int32 = 1) throws -> String {
+        var taskId: String = ""
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            var outId: UnsafeMutablePointer<CChar>? = nil
+            let result = name.withCString { cName in
+                description.withCString { cDesc in
+                    ff_task_submit(cName, cDesc, priority, &outId)
+                }
+            }
+
+            if result == 0, let id = outId {
+                taskId = String(cString: id)
+                ff_free_string(id)
+            }
+        }
+
+        semaphore.wait()
+
+        guard !taskId.isEmpty else {
+            let errorMessage = getLastError()
+            throw CoreBridgeError.ffiError(errorMessage)
+        }
+
+        return taskId
+    }
+
+    /// Cancel a running or pending task
+    /// - Parameter taskId: Task ID to cancel
+    /// - Throws: CoreBridgeError if operation fails
+    public func cancelTask(taskId: String) throws {
+        var ffiResult: Int32 = -1
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            let result = taskId.withCString { cId in
+                ff_task_cancel(cId)
+            }
+            ffiResult = result
+        }
+
+        semaphore.wait()
+
+        guard ffiResult == 0 else {
+            let errorMessage = getLastError()
+            throw CoreBridgeError.ffiError(errorMessage)
+        }
+    }
+
+    /// List all tasks
+    /// - Returns: Array of TaskInfo objects
+    public func listTasks() -> [TaskInfo] {
+        var tasks: [TaskInfo] = []
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            var context = TaskListContext(tasks: &tasks)
+            ff_task_list(taskListCallback, &context)
+        }
+
+        semaphore.wait()
+        return tasks
+    }
+
+    /// Get task progress
+    /// - Parameter taskId: Task ID
+    /// - Returns: Progress value (0.0 to 1.0), or -1 if not found
+    public func getTaskProgress(taskId: String) -> Double {
+        var progress: Double = -1.0
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            var outProgress: Double = -1.0
+            let result = taskId.withCString { cId in
+                ff_task_progress(cId, &outProgress)
+            }
+
+            if result == 0 {
+                progress = outProgress
+            }
+        }
+
+        semaphore.wait()
+        return progress
+    }
+
+    // MARK: - Volume Management (Sub-project 10)
+
+    /// List all mounted volumes
+    /// - Returns: Array of VolumeInfo objects
+    public func listVolumes() -> [VolumeInfo] {
+        var volumes: [VolumeInfo] = []
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            var context = VolumeListContext(volumes: &volumes)
+            ff_volume_list(volumeListCallback, &context)
+        }
+
+        semaphore.wait()
+        return volumes
+    }
+
+    /// Get detailed info for a specific volume
+    /// - Parameter path: Volume path
+    /// - Returns: VolumeInfo object
+    /// - Throws: CoreBridgeError if operation fails
+    public func getVolumeInfo(path: String) throws -> VolumeInfo {
+        var volumeInfo: VolumeInfo?
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            var info = FFVolumeInfo()
+            let result = path.withCString { cPath in
+                ff_volume_info(cPath, &info)
+            }
+
+            if result == 0 {
+                volumeInfo = VolumeInfo(from: info)
+            }
+        }
+
+        semaphore.wait()
+
+        guard let info = volumeInfo else {
+            let errorMessage = getLastError()
+            throw CoreBridgeError.ffiError(errorMessage)
+        }
+
+        return info
+    }
+
+    /// Perform health check on a volume
+    /// - Parameter path: Volume path
+    /// - Returns: Health check result string
+    /// - Throws: CoreBridgeError if operation fails
+    public func checkVolumeHealth(path: String) throws -> String {
+        var resultString: String = ""
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            var outResult: UnsafeMutablePointer<CChar>? = nil
+            let result = path.withCString { cPath in
+                ff_volume_health_check(cPath, &outResult)
+            }
+
+            if result == 0, let res = outResult {
+                resultString = String(cString: res)
+                ff_free_string(res)
+            }
+        }
+
+        semaphore.wait()
+
+        guard !resultString.isEmpty else {
+            let errorMessage = getLastError()
+            throw CoreBridgeError.ffiError(errorMessage)
+        }
+
+        return resultString
+    }
+
+    /// Eject a removable volume
+    /// - Parameter path: Volume path
+    /// - Throws: CoreBridgeError if operation fails
+    public func ejectVolume(path: String) throws {
+        var ffiResult: Int32 = -1
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            let result = path.withCString { cPath in
+                ff_volume_eject(cPath)
+            }
+            ffiResult = result
+        }
+
+        semaphore.wait()
+
+        guard ffiResult == 0 else {
+            let errorMessage = getLastError()
+            throw CoreBridgeError.ffiError(errorMessage)
+        }
+    }
+
+    /// Mount a network or external volume
+    /// - Parameters:
+    ///   - path: Volume path or URL
+    ///   - options: Mount options
+    /// - Throws: CoreBridgeError if operation fails
+    public func mountVolume(path: String, options: String = "") throws {
+        var ffiResult: Int32 = -1
+        let semaphore = DispatchSemaphore(value: 0)
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            let result = path.withCString { cPath in
+                options.withCString { cOptions in
+                    ff_volume_mount(cPath, cOptions)
+                }
+            }
+            ffiResult = result
+        }
+
+        semaphore.wait()
+
+        guard ffiResult == 0 else {
+            let errorMessage = getLastError()
+            throw CoreBridgeError.ffiError(errorMessage)
+        }
+    }
 }
 
 // MARK: - Thumbnail Contexts
@@ -783,4 +1117,44 @@ private func thumbnailsCallback(
     let path = String(cString: thumbnailPath)
     let context = userData.withMemoryRebound(to: ThumbnailsContext.self, capacity: 1) { $0 }
     context.pointee.paths.pointee.append(path)
+}
+
+// MARK: - Task & Volume Contexts
+
+/// Context for task list callback
+private struct TaskListContext {
+    let tasks: UnsafeMutablePointer<[TaskInfo]>
+}
+
+/// Context for volume list callback
+private struct VolumeListContext {
+    let volumes: UnsafeMutablePointer<[VolumeInfo]>
+}
+
+// MARK: - Task & Volume Callbacks
+
+/// Callback for task list
+private func taskListCallback(
+    _ taskInfoPtr: UnsafePointer<FFTaskInfo>?,
+    _ userData: UnsafeMutableRawPointer?
+) {
+    guard let taskInfoPtr = taskInfoPtr,
+          let userData = userData else { return }
+
+    let context = userData.withMemoryRebound(to: TaskListContext.self, capacity: 1) { $0 }
+    let task = TaskInfo(from: taskInfoPtr.pointee)
+    context.pointee.tasks.pointee.append(task)
+}
+
+/// Callback for volume list
+private func volumeListCallback(
+    _ volumeInfoPtr: UnsafePointer<FFVolumeInfo>?,
+    _ userData: UnsafeMutableRawPointer?
+) {
+    guard let volumeInfoPtr = volumeInfoPtr,
+          let userData = userData else { return }
+
+    let context = userData.withMemoryRebound(to: VolumeListContext.self, capacity: 1) { $0 }
+    let volume = VolumeInfo(from: volumeInfoPtr.pointee)
+    context.pointee.volumes.pointee.append(volume)
 }

@@ -1600,6 +1600,62 @@ pub extern "C" fn ff_generate_thumbnails(
     }
 }
 
+// ── Settings API (Sub-project 8) ────────────────────────────────────
+
+/// Load all settings as a JSON string.
+///
+/// Returns a heap-allocated C string. Must be freed with `ff_free_string()`.
+#[no_mangle]
+pub extern "C" fn ff_settings_load() -> *mut c_char {
+    crate::core::settings::settings_load()
+}
+
+/// Save all settings from a JSON string.
+///
+/// # Arguments
+/// - `json` — NUL-terminated UTF-8 JSON string containing settings.
+///
+/// # Returns
+/// - `FF_OK` on success.
+/// - `FF_ERR_INVALID_PATH` if json is null.
+/// - `FF_ERR_GENERIC` if JSON parsing fails.
+#[no_mangle]
+pub extern "C" fn ff_settings_save(json: *const c_char) -> c_int {
+    crate::core::settings::settings_save(json)
+}
+
+/// Get a specific setting value by key.
+///
+/// Keys are dot-separated, e.g., "general.default_directory", "appearance.theme".
+///
+/// # Arguments
+/// - `key` — NUL-terminated UTF-8 key string.
+///
+/// # Returns
+/// - Pointer to value string on success.
+/// - `NULL` on error or if key not found.
+#[no_mangle]
+pub extern "C" fn ff_settings_get(key: *const c_char) -> *mut c_char {
+    crate::core::settings::settings_get(key)
+}
+
+/// Set a specific setting value by key.
+///
+/// Keys are dot-separated, e.g., "general.default_directory", "appearance.theme".
+///
+/// # Arguments
+/// - `key` — NUL-terminated UTF-8 key string.
+/// - `value` — NUL-terminated UTF-8 value string.
+///
+/// # Returns
+/// - `FF_OK` on success.
+/// - `FF_ERR_INVALID_PATH` if key or value is null.
+/// - `FF_ERR_GENERIC` if key is invalid.
+#[no_mangle]
+pub extern "C" fn ff_settings_set(key: *const c_char, value: *const c_char) -> c_int {
+    crate::core::settings::settings_set(key, value)
+}
+
 // ── Tests ───────────────────────────────────────────────────────────
 
 #[cfg(test)]
@@ -1704,4 +1760,159 @@ mod tests {
     }
 
     extern "C" fn dummy_callback(_entry: *const FFEntryRef, _user_data: *mut c_void) {}
+
+    // ── Settings Tests ────────────────────────────────────────────────
+
+    #[test]
+    fn test_ff_settings_load() {
+        let ptr = ff_settings_load();
+        assert!(!ptr.is_null());
+        unsafe {
+            let cstr = CStr::from_ptr(ptr);
+            let json = cstr.to_str().unwrap();
+            assert!(json.contains("general"));
+            assert!(json.contains("appearance"));
+            assert!(json.contains("shortcuts"));
+            assert!(json.contains("advanced"));
+            let _ = CString::from_raw(ptr);
+        }
+    }
+
+    #[test]
+    fn test_ff_settings_get_set() {
+        // Set a value
+        let key = CString::new("appearance.theme").unwrap();
+        let value = CString::new("dark").unwrap();
+        let result = ff_settings_set(key.as_ptr(), value.as_ptr());
+        assert_eq!(result, FF_OK);
+
+        // Get the value back
+        let result = ff_settings_get(key.as_ptr());
+        assert!(!result.is_null());
+        unsafe {
+            let cstr = CStr::from_ptr(result);
+            assert_eq!(cstr.to_str().unwrap(), "dark");
+            let _ = CString::from_raw(result);
+        }
+    }
+
+    #[test]
+    fn test_ff_settings_get_invalid_key() {
+        let key = CString::new("invalid.key").unwrap();
+        let result = ff_settings_get(key.as_ptr());
+        assert!(result.is_null());
+    }
+
+    #[test]
+    fn test_ff_settings_set_null() {
+        let result = ff_settings_set(std::ptr::null(), std::ptr::null());
+        assert_eq!(result, FF_ERR_INVALID_PATH);
+    }
+
+    #[test]
+    fn test_ff_settings_save() {
+        let json = r#"{"general":{"default_directory":"/test","show_hidden_files":true,"confirm_delete":false},"appearance":{"theme":"light","icon_size":48,"font_size":14},"shortcuts":{"new_window":"Cmd+N","close_window":"Cmd+W","search":"Cmd+F","refresh":"Cmd+R","delete":"Cmd+Backspace","copy":"Cmd+C","paste":"Cmd+V","select_all":"Cmd+A"},"advanced":{"cache_size_mb":200,"thumbnail_quality":90,"fsevents_enabled":false}}"#;
+        let c_json = CString::new(json).unwrap();
+        let result = ff_settings_save(c_json.as_ptr());
+        assert_eq!(result, FF_OK);
+
+        // Verify the saved value
+        let key = CString::new("appearance.theme").unwrap();
+        let result = ff_settings_get(key.as_ptr());
+        assert!(!result.is_null());
+        unsafe {
+            let cstr = CStr::from_ptr(result);
+            assert_eq!(cstr.to_str().unwrap(), "light");
+            let _ = CString::from_raw(result);
+        }
+    }
+
+    // ── Task Scheduler Tests ──────────────────────────────────────────
+
+    #[test]
+    fn test_ff_task_submit() {
+        let task_type = CString::new("copy").unwrap();
+        let params = CString::new(r#"{\"source\":\"/test/src\",\"destination\":\"/test/dst\"}"#).unwrap();
+        
+        let result = crate::core::task_scheduler::ff_task_submit(task_type.as_ptr(), params.as_ptr());
+        assert!(result >= 0);
+    }
+
+    #[test]
+    fn test_ff_task_submit_invalid_type() {
+        let task_type = CString::new("invalid").unwrap();
+        let result = crate::core::task_scheduler::ff_task_submit(task_type.as_ptr(), std::ptr::null());
+        assert_eq!(result, FF_ERR_GENERIC);
+    }
+
+    #[test]
+    fn test_ff_task_cancel_not_found() {
+        let result = crate::core::task_scheduler::ff_task_cancel(99999);
+        assert_eq!(result, FF_ERR_NOT_FOUND);
+    }
+
+    // ── Volume Management Tests ─────────────────────────────────────
+
+    #[test]
+    fn test_ff_volume_list() {
+        extern "C" fn volume_callback(
+            _path: *const c_char,
+            _name: *const c_char,
+            _volume_type: *const c_char,
+            _total_capacity: u64,
+            _free_space: u64,
+            _is_removable: bool,
+            _user_data: *mut c_void,
+        ) {}
+
+        let result = crate::core::volumes::ff_volume_list(volume_callback, std::ptr::null_mut());
+        assert_eq!(result, FF_OK);
+    }
+
+    #[test]
+    fn test_ff_volume_info_null() {
+        extern "C" fn info_callback(
+            _path: *const c_char,
+            _name: *const c_char,
+            _volume_type: *const c_char,
+            _total_capacity: u64,
+            _used_space: u64,
+            _free_space: u64,
+            _filesystem: *const c_char,
+            _is_removable: bool,
+            _is_ejectable: bool,
+            _is_network: bool,
+            _user_data: *mut c_void,
+        ) {}
+
+        let result = crate::core::volumes::ff_volume_info(std::ptr::null(), info_callback, std::ptr::null_mut());
+        assert_eq!(result, FF_ERR_INVALID_PATH);
+    }
+
+    #[test]
+    fn test_ff_volume_health_check_null() {
+        extern "C" fn health_callback(
+            _path: *const c_char,
+            _overall_status: *const c_char,
+            _disk_usage_percent: f64,
+            _smart_available: bool,
+            _smart_status: *const c_char,
+            _user_data: *mut c_void,
+        ) {}
+
+        let result = crate::core::volumes::ff_volume_health_check(std::ptr::null(), health_callback, std::ptr::null_mut());
+        assert_eq!(result, FF_ERR_INVALID_PATH);
+    }
+
+    #[test]
+    fn test_ff_volume_eject_null() {
+        let result = crate::core::volumes::ff_volume_eject(std::ptr::null());
+        assert_eq!(result, FF_ERR_INVALID_PATH);
+    }
+
+    #[test]
+    fn test_ff_volume_mount_null() {
+        let result = crate::core::volumes::ff_volume_mount(std::ptr::null());
+        assert_eq!(result, FF_ERR_INVALID_PATH);
+    }
 }

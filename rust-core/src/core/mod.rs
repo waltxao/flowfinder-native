@@ -8,5 +8,8 @@ pub mod fsevents;
 pub mod path_guard;
 pub mod scanner;
 pub mod search_engine;
+pub mod settings;
+pub mod task_scheduler;
 pub mod thumbnails;
 pub mod utils;
+pub mod volumes;
