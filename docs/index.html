@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowFinder — macOS 原生文件管理器</title>
+    <meta name="description" content="FlowFinder 是一款专为 macOS 打造的原生文件管理器，采用 Swift & AppKit + Rust Core 架构。">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --accent: #0A84FF;
+            --accent-light: #409CFF;
+            --accent-dark: #0071E3;
+            --bg: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-card: rgba(28, 28, 30, 0.72);
+            --text: #f5f5f7;
+            --text-secondary: #a1a1a6;
+            --text-tertiary: #6e6e73;
+            --border: rgba(255, 255, 255, 0.1);
+            --blur: saturate(180%) blur(20px);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Noto Sans CJK SC", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Animated gradient background */
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at 20% 0%, rgba(10, 132, 255, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 100%, rgba(94, 92, 230, 0.12) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 50%, rgba(48, 209, 88, 0.05) 0%, transparent 70%);
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 0;
+        }
+
+        nav .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent), #5E5CE6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 980px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-dark);
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 120px 24px 60px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 980px;
+            background: rgba(10, 132, 255, 0.12);
+            border: 1px solid rgba(10, 132, 255, 0.3);
+            color: var(--accent-light);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 32px;
+        }
+
+        .hero h1 {
+            font-size: clamp(48px, 7vw, 96px);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.05;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #fff 0%, #a1a1a6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .tagline {
+            font-size: clamp(18px, 2.5vw, 24px);
+            color: var(--text-secondary);
+            max-width: 640px;
+            line-height: 1.5;
+            margin-bottom: 40px;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-large {
+            padding: 14px 28px;
+            font-size: 16px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 48px;
+            margin-top: 80px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 40px;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        /* Screenshot */
+        .screenshot-section {
+            padding: 40px 24px 80px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .screenshot-container {
+            max-width: 1100px;
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border);
+        }
+
+        .screenshot-container img {
+            width: 100%;
+            display: block;
+        }
+
+        /* Features */
+        .features {
+            padding: 120px 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-title h2 {
+            font-size: clamp(36px, 5vw, 56px);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .section-title p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .icon-blue { background: rgba(10, 132, 255, 0.15); }
+        .icon-purple { background: rgba(94, 92, 230, 0.15); }
+        .icon-green { background: rgba(48, 209, 88, 0.15); }
+        .icon-orange { background: rgba(255, 159, 10, 0.15); }
+        .icon-red { background: rgba(255, 69, 58, 0.15); }
+        .icon-teal { background: rgba(100, 210, 255, 0.15); }
+
+        /* Architecture */
+        .architecture {
+            padding: 120px 24px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .arch-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .arch-diagram {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            font-family: "SF Mono", "Fira Code", "JetBrains Mono", monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            overflow-x: auto;
+            color: var(--text-secondary);
+        }
+
+        .arch-diagram .layer-ui { color: var(--accent-light); }
+        .arch-diagram .layer-rust { color: #FF9F0A; }
+        .arch-diagram .layer-ffi { color: #30D158; }
+
+        .perf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 32px;
+        }
+
+        .perf-table th, .perf-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .perf-table th {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            font-weight: 600;
+        }
+
+        .perf-table td {
+            font-size: 15px;
+        }
+
+        .perf-table .improvement {
+            color: #30D158;
+            font-weight: 700;
+        }
+
+        /* Download */
+        .download {
+            padding: 120px 24px;
+            text-align: center;
+        }
+
+        .download-card {
+            max-width: 640px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 48px;
+        }
+
+        .download-card h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .download-card p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .download-options {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .sys-req {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 24px 40px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        footer .footer-links {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        footer .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        footer .footer-links a:hover { color: var(--text); }
+
+        footer .copyright {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero-stats { gap: 24px; }
+            .stat-value { font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <a href="#" class="logo">
+                <div class="logo-icon">📁</div>
+                FlowFinder
+            </a>
+            <div class="nav-links">
+                <a href="#features">功能</a>
+                <a href="#architecture">架构</a>
+                <a href="#performance">性能</a>
+                <a href="#download">下载</a>
+                <a href="https://github.com/waltxao/FlowFinder" target="_blank">GitHub</a>
+            </div>
+            <a href="https://github.com/waltxao/FlowFinder/releases" target="_blank" class="btn btn-primary">下载</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span>✨</span>
+            <span>0.6.0-alpha 现已发布</span>
+        </div>
+        <h1>FlowFinder</h1>
+        <p class="tagline">macOS 原生文件管理器 — Swift & AppKit 构建，Rust Core 驱动，玻璃态双栏体验</p>
+        <div class="hero-cta">
+            <a href="https://github.com/waltxao/FlowFinder/releases" target="_blank" class="btn btn-primary btn-large">
+                <span>⬇</span> 下载 0.6.0-alpha
+            </a>
+            <a href="https://github.com/waltxao/FlowFinder" target="_blank" class="btn btn-secondary btn-large">
+                <span>⌥</span> 查看源码
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat">
+                <div class="stat-value">10-30x</div>
+                <div class="stat-label">目录读取加速</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">~20 MB</div>
+                <div class="stat-label">内存占用</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">0.5s</div>
+                <div class="stat-label">启动时间</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">原生体验</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshot -->
+    <section class="screenshot-section">
+        <div class="screenshot-container">
+            <img src="images/app-mockup-main.jpg" alt="FlowFinder 主界面" loading="lazy">
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+        <div class="section-title">
+            <h2>核心功能</h2>
+            <p>为 macOS 用户打造的全方位文件管理体验</p>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon icon-blue">🪟</div>
+                <h3>玻璃态双栏</h3>
+                <p>NSVisualEffectView 系统级毛玻璃材质，左右独立导航，自动跟随深浅色主题，完全匹配 macOS 原生视觉。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-orange">⚡</div>
+                <h3>Rust Core 引擎</h3>
+                <p>getattrlistbulk 批量读取、BLAKE3 哈希、rayon 并行处理，性能远超 WebView 方案，目录读取快 10-30 倍。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-green">🔀</div>
+                <h3>跨面板操作</h3>
+                <p>一键复制（⌘⇧C）/ 移动（⌘⇧X）到对侧面板，文件夹可直接在对侧打开，冲突自动追加「副本 N」。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-purple">👁</div>
+                <h3>Quick Look 预览</h3>
+                <p>QLPreviewPanel 原生浮动预览，空格键即可快速查看文件内容，无需打开第三方应用。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-red">🔍</div>
+                <h3>重复文件检测</h3>
+                <p>三阶段 BLAKE3 哈希检测（大小分组 → 部分哈希 → 完整哈希），实时进度，安全删除到废纸篓。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-teal">🤖</div>
+                <h3>AI 智能打标</h3>
+                <p>支持 OpenAI / Claude / Ollama 多模型，隐私隔离仅发送文件名，标签与 macOS 原生标签双向同步。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-blue">📁</div>
+                <h3>原生拖拽</h3>
+                <p>NSDraggingSource/Destination，同卷移动、跨卷复制、Cmd 键切换，行为与 Finder 完全一致。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-green">💾</div>
+                <h3>APFS CoW 复制</h3>
+                <p>利用 clonefile 系统调用实现 APFS 卷零拷贝复制，大文件瞬时复制完成，不占用额外磁盘空间。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-orange">🌐</div>
+                <h3>SMB 网络共享</h3>
+                <p>渐进式加载、LRU 目录缓存、rayon 并行操作、断连自动重连，流畅访问网络驱动器。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture -->
+    <section class="architecture" id="architecture">
+        <div class="arch-container">
+            <div class="section-title">
+                <h2>架构设计</h2>
+                <p>Swift & AppKit 负责 UI，Rust Core 提供高性能后端，FFI 桥接</p>
+            </div>
+            <div class="arch-diagram">
+<span class="layer-ui">┌──────────────────────────────────────────────────┐
+│  Swift & AppKit UI Layer                          │
+│  - NSTableView / NSCollectionView                 │
+│  - NSSplitView 双栏布局                           │
+│  - NSVisualEffectView 毛玻璃                      │
+│  - QLPreviewPanel Quick Look                      │
+│  - Spotlight NSMetadataQuery                      │
+│  - NSDraggingSource/Destination 原生拖拽          │
+└──────────────────────────────────────────────────┘</span>
+                        │
+                        │ <span class="layer-ffi">FFI (C ABI)</span>
+                        ▼
+<span class="layer-rust">┌──────────────────────────────────────────────────┐
+│  Rust Core Engine (cdylib)                        │
+│  - bulk_read: getattrlistbulk(2) 批量读取       │
+│  - scanner: 文件扫描 + 元数据                     │
+│  - dedup_engine: 三阶段 BLAKE3 去重               │
+│  - cow_copy: APFS copy-on-write 克隆              │
+│  - dir_cache: LRU + TTL 目录缓存                  │
+│  - task_scheduler: 统一任务调度                   │
+│  - search_engine: 正则 / 通配符搜索               │
+│  - sqlite_cache: 标签 / 缩略图持久化              │
+└──────────────────────────────────────────────────┘</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Performance -->
+    <section class="features" id="performance" style="padding-top: 80px;">
+        <div class="section-title">
+            <h2>性能对比</h2>
+            <p>相较于原 Tauri + React 版本的显著提升</p>
+        </div>
+        <table class="perf-table">
+            <thead>
+                <tr>
+                    <th>指标</th>
+                    <th>原版（Tauri）</th>
+                    <th>新版（Native）</th>
+                    <th>提升</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>目录列表（冷）</td>
+                    <td>~15-30 ms</td>
+                    <td>~0.5-1.0 ms</td>
+                    <td class="improvement">10-30x</td>
+                </tr>
+                <tr>
+                    <td>目录列表（热）</td>
+                    <td>~5-10 ms</td>
+                    <td>~0.2-0.5 ms</td>
+                    <td class="improvement">10-20x</td>
+                </tr>
+                <tr>
+                    <td>内存占用</td>
+                    <td>~50-100 MB</td>
+                    <td>~20-30 MB</td>
+                    <td class="improvement">2-3x</td>
+                </tr>
+                <tr>
+                    <td>启动时间</td>
+                    <td>~2-3s</td>
+                    <td>~0.5s</td>
+                    <td class="improvement">4-6x</td>
+                </tr>
+                <tr>
+                    <td>二进制大小</td>
+                    <td>~80-100 MB</td>
+                    <td>~15-20 MB</td>
+                    <td class="improvement">5-6x</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Download -->
+    <section class="download" id="download">
+        <div class="download-card">
+            <h3>立即下载</h3>
+            <p>获取 FlowFinder 0.6.0-alpha，体验原生 macOS 文件管理</p>
+            <div class="download-options">
+                <a href="https://github.com/waltxao/FlowFinder/releases" target="_blank" class="btn btn-primary btn-large">
+                    <span>⬇</span> 下载 DMG
+                </a>
+                <a href="https://github.com/waltxao/FlowFinder/releases" target="_blank" class="btn btn-secondary btn-large">
+                    <span>📦</span> 下载 ZIP
+                </a>
+            </div>
+            <p class="sys-req">需要 macOS 13.0+（Apple Silicon） · 当前为 alpha 版本</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="https://github.com/waltxao/FlowFinder" target="_blank">GitHub</a>
+            <a href="https://github.com/waltxao/FlowFinder/releases" target="_blank">Releases</a>
+            <a href="https://github.com/waltxao/FlowFinder/blob/main/CHANGELOG.md" target="_blank">变更日志</a>
+            <a href="https://github.com/waltxao/FlowFinder/blob/main/docs/MIGRATION_LOG.md" target="_blank">重构日志</a>
+            <a href="https://github.com/waltxao/FlowFinder/issues" target="_blank">报告问题</a>
+        </div>
+        <p class="copyright">© 2026 FlowFinder · MIT License · Made with ❤️ for macOS</p>
+    </footer>
+</body>
+</html>
