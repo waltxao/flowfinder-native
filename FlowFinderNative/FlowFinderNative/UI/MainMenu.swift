@@ -81,6 +81,17 @@ class MainMenu {
         goMenu.addItem(.separator())
         goMenu.addItem(withTitle: "连接服务器...", action: #selector(MainWindowController.menuConnectServer(_:)), keyEquivalent: "k")
 
+        // Tools menu (工具)
+        let toolsMenuItem = NSMenuItem()
+        mainMenu.addItem(toolsMenuItem)
+        let toolsMenu = NSMenu(title: "工具")
+        toolsMenuItem.submenu = toolsMenu
+        toolsMenu.addItem(withTitle: "搜索...", action: #selector(MainWindowController.menuSearch(_:)), keyEquivalent: "f")
+        let dupScanItem = toolsMenu.addItem(withTitle: "重复文件扫描...", action: #selector(MainWindowController.menuDuplicateScan(_:)), keyEquivalent: "d")
+        dupScanItem.keyEquivalentModifierMask = [.command, .shift]
+        toolsMenu.addItem(.separator())
+        toolsMenu.addItem(withTitle: "任务面板", action: #selector(MainWindowController.menuTaskPanel(_:)), keyEquivalent: "0")
+
         // Window menu
         let windowMenuItem = NSMenuItem()
         mainMenu.addItem(windowMenuItem)

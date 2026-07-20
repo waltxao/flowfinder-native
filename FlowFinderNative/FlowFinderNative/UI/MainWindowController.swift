@@ -17,6 +17,7 @@ public class MainWindowController: NSWindowController {
     private var leftPaneContainer: NSView!
     private var rightPaneContainer: NSView!
     private var detailsBar: DetailsBar!
+    private var taskProgressBar: TaskProgressBar!
     private var mainSplitView: NSSplitView!
     private var paneSplitView: NSSplitView!
 
@@ -195,11 +196,16 @@ public class MainWindowController: NSWindowController {
         detailsBar = DetailsBar()
         detailsBar.translatesAutoresizingMaskIntoConstraints = false
 
+        // Task Progress Bar（底部固定进度条）
+        taskProgressBar = TaskProgressBar()
+        taskProgressBar.translatesAutoresizingMaskIntoConstraints = false
+
         // Main container
         let mainContainer = NSView()
         mainContainer.translatesAutoresizingMaskIntoConstraints = false
         mainContainer.addSubview(mainSplitView)
         mainContainer.addSubview(detailsBar)
+        mainContainer.addSubview(taskProgressBar)
 
         window.contentView?.addSubview(mainContainer)
 
@@ -216,8 +222,13 @@ public class MainWindowController: NSWindowController {
 
             detailsBar.leadingAnchor.constraint(equalTo: mainContainer.leadingAnchor),
             detailsBar.trailingAnchor.constraint(equalTo: mainContainer.trailingAnchor),
-            detailsBar.bottomAnchor.constraint(equalTo: mainContainer.bottomAnchor),
+            detailsBar.bottomAnchor.constraint(equalTo: taskProgressBar.topAnchor),
             detailsBar.heightAnchor.constraint(equalToConstant: 120),
+
+            taskProgressBar.leadingAnchor.constraint(equalTo: mainContainer.leadingAnchor),
+            taskProgressBar.trailingAnchor.constraint(equalTo: mainContainer.trailingAnchor),
+            taskProgressBar.bottomAnchor.constraint(equalTo: mainContainer.bottomAnchor),
+            taskProgressBar.heightAnchor.constraint(equalToConstant: TaskProgressBar.height),
         ])
 
         // Sidebar width
@@ -231,6 +242,13 @@ public class MainWindowController: NSWindowController {
 
         // Set initial active pane
         updateActivePaneVisual()
+
+        // 启动任务调度轮询
+        TaskSchedulerManager.shared.startPolling()
+    }
+
+    deinit {
+        TaskSchedulerManager.shared.stopPolling()
     }
 
     private func setupBindings() {
@@ -651,6 +669,22 @@ extension MainWindowController {
                 }
             }
         }
+    }
+
+    @objc func menuSearch(_ sender: Any?) {
+        let path = activePaneViewModel.currentPath
+        SearchPanelController.shared.onNavigateToPath = { [weak self] resultPath in
+            self?.activePaneViewModel.navigate(to: (resultPath as NSString).deletingLastPathComponent)
+        }
+        SearchPanelController.shared.showPanel(initialQuery: "", searchPath: path)
+    }
+
+    @objc func menuDuplicateScan(_ sender: Any?) {
+        DuplicateScanWindowController.shared.showWindow()
+    }
+
+    @objc func menuTaskPanel(_ sender: Any?) {
+        TaskPanelWindowController.shared.showWindow()
     }
 
     // MARK: - Helpers
