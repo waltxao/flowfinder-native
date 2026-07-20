@@ -2,690 +2,690 @@
   {
     "isFramework" : true,
     "moduleName" : "Accessibility",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Accessibility-9D3WB2STUGM9.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Accessibility-2L16Z0ILKR7HS.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "AppKit",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/AppKit-1QSSHHBB9Q7CK.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/AppKit-R3IOKSA8FDVM.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "ColorSync",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ColorSync-G5DIGVXP05YY.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ColorSync-39JWU2PPFJT4C.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "Combine",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Combine-3SZ0DFBBCCGT.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Combine-QN4U3OSD7GB2.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "CoreAudio",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreAudio-3LBVL7C54JHBO.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreAudio-2V5EPPPSZR6VS.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "CoreData",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreData-LUM9S2V4A2QL.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreData-3C86M0KPKKHHE.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "CoreFoundation",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreFoundation-3DGFFC7I4ZXL5.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreFoundation-1A271KPSTRCY7.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "CoreGraphics",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreGraphics-2M9I0312DL0BZ.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreGraphics-2KVVR02EBLQGT.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "CoreImage",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreImage-2AQZ8EJ65GCR9.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreImage-2ZDMHUDDCTQZF.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "CoreMedia",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreMedia-10SBQ0TFGSVK9.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreMedia-1A8I90LRJ6J8F.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "CoreText",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreText-2K0MM6CM8O28Z.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreText-26DD8JKRD29TQ.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "CoreTransferable",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreTransferable-1E8HLX9803VJM.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreTransferable-1GXYOF7E3H90S.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "CoreVideo",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreVideo-2NFETDW9AC9TZ.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreVideo-3OPXP5F4PAXOS.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "Darwin",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Darwin-3J9HPH3F3ARII.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Darwin-1YN5L7EF68Z70.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "DataDetection",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/DataDetection-UB7WYXJ9BRVU.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/DataDetection-UHC1UXITOQME.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "DeveloperToolsSupport",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/DeveloperToolsSupport-DMDGXYMXWBA1.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/DeveloperToolsSupport-2NOXNVCOT7SME.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "Dispatch",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Dispatch-2HYV12GBNL8MH.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Dispatch-3VPN957PWH9KW.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "Foundation",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Foundation-2MR9QYAB6SQY6.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Foundation-13MF11BS2W29J.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "IOKit",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/IOKit-1EKE9XGHYWT1B.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/IOKit-2ZRY30P19E18N.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "ImageIO",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ImageIO-8AB9LU3WUCBH.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ImageIO-9SELDDEUU6XP.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "Metal",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Metal-2KZI7MXTJ8UZV.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Metal-32YTQIM8T0FGC.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "OSLog",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/OSLog-3G0MK85IF9BZM.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/OSLog-1G8DTB23367RD.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "ObjectiveC",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ObjectiveC-32AXCNPYDU8LC.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ObjectiveC-6ST9MTTIXQ7J.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "Observation",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Observation-3BAUYW1X6R23E.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Observation-YW7B00Q2VY41.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "QuartzCore",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/QuartzCore-9MBW14M5TQVS.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/QuartzCore-1S28ZQL2K4ROH.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "Spatial",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Spatial-8M1VH2TV0I9V.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Spatial-3P9FEWZNTKXGD.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "Swift",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Swift-1LJEFXG9BF7SQ.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Swift-3BWQEOWFKVDDD.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "SwiftOnoneSupport",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftOnoneSupport-10UHK4EBQ7AHO.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftOnoneSupport-2G5PBJ1IYODNF.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "SwiftUI",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftUI-CPU3YNLCRWG5.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftUI-1IRPOM1IQZOYC.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "SwiftUICore",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftUICore-2JW7R685YE43W.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftUICore-3HJ3POPQXP8BN.swiftmodule"
   },
   {
     "isFramework" : true,
     "moduleName" : "Symbols",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Symbols-2JO2KFO5DA5QZ.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Symbols-1C0Y2A37M97US.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "Synchronization",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Synchronization-121G1MHWL6R22.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Synchronization-264JBRGD1RBX5.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "System",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/System-TTWB84X9MQOG.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/System-1AWCL7LFVB9IE.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "UniformTypeIdentifiers",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/UniformTypeIdentifiers-3DWCUDGMBP7NT.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/UniformTypeIdentifiers-2NMKX02LFMVMO.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "XPC",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/XPC-1YL1SFQQ1EJOL.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/XPC-2YGQWCD2T6F00.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "_Builtin_float",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_float-INYISL3T0OWI.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_float-3E7K8QAH5JEL2.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "_Concurrency",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Concurrency-2N3YMYTYA2KQE.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Concurrency-1YXRYALQEG9MV.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "_DarwinFoundation1",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation1-C0ZOQXJ7R3XV.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation1-1P4F27K4W5N1H.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "_DarwinFoundation2",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation2-14997YZIIZZDR.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation2-3RRMT4JJ4Y2HY.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "_DarwinFoundation3",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation3-98EFM0Q4ERE4.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation3-21J0VA2WGT4BE.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "_StringProcessing",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_StringProcessing-38XOXSTYXCOFF.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_StringProcessing-3HY50EQA6SZHV.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "os",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/os-1G1T0Z9ZDHTHK.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/os-ZA630SXUPN54.swiftmodule"
   },
   {
     "isFramework" : false,
     "moduleName" : "simd",
-    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/simd-T6VLXU28IDWM.swiftmodule"
+    "modulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/simd-2HBJUTB0ZLIXB.swiftmodule"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/Accessibility.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Accessibility-2OF5HZG790CSCPVEUQC77WBMQ.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Accessibility-2AER7UTEM7HYBHQCC5RL6B3XS.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "Accessibility"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/AppKit.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/AppKit-7AR5O1K0ESGF3BCUGD8NAUHCP.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/AppKit-5EEGBJ9Z0QHBMS9J14RJVOWJZ.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "AppKit"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/ApplicationServices.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ApplicationServices-4EQ3CTT3COGM16OAI7EFR8PV3.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ApplicationServices-88QGYLRRAVE4PXR6E7L030H72.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "ApplicationServices"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CFNetwork.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CFNetwork-EFNPVHNN258KO4DUUZDCHSNWL.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CFNetwork-5PLC0E4C6SO60YTKDFOPVOJMA.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CFNetwork"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/cups.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CUPS-7AA4H3VERAA00K3BIUHGFMUE4.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CUPS-9QSCB0G9MPTO2TC8NVB4WTUUZ.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CUPS"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/Cocoa.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Cocoa-3NV911V77AR6MUKDGV77OAPY1.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Cocoa-7L838YZ5QXN31Q68YGLH6B000.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "Cocoa"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/ColorSync.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ColorSync-EY22HV8ZQ79Q5YW2OC784V9W6.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ColorSync-5URFSC3DC1Z0ADGCM7YYXC1X.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "ColorSync"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CoreAudio.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreAudio-EH3OL9V6CKXIJ016JGP2SCSR4.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreAudio-E741SIQINWCMDS00L7N5DPVKI.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CoreAudio"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CoreAudioTypes.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreAudioTypes-7ZCAJDX4DTY3CFSR5MIH691RB.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreAudioTypes-BDNYIZL3465J9M5MZU3A7CM5F.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CoreAudioTypes"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CoreData.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreData-7IB3N99W6YYGY1WOVJFNQV9BB.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreData-EUB8EFW3E63RH0RB01HVEPZRZ.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CoreData"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CoreFoundation.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreFoundation-9CDG4GMTVG7RJZH9OK6K6L3AM.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreFoundation-2FSXCLEPU70VOEBDFTXJ15FW1.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CoreFoundation"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CoreGraphics.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreGraphics-ESHRSXX8AZX97ENM0HVL6PP7P.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreGraphics-4V6I7R0XTSLSN4QN9VSP1YM33.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CoreGraphics"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CoreImage.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreImage-9FXN4THGWXAVZRMAI9VKQA59S.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreImage-49FDLFYYJAMK2KBDAXGNDOH0Q.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CoreImage"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CoreMedia.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreMedia-65SFOUBKBQZLZD4WO7JM9WU2L.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreMedia-B9LOCJK2NMDNZ26DYKB897ATC.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CoreMedia"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CoreServices.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreServices-48NMXNJXDPS4BUUXIWE00OAWL.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreServices-5WNANB3K7RL3S1WITSLJEKHQ3.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CoreServices"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CoreText.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreText-6F7ETR13KX4XBUI8YAMFB0TVY.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreText-EDNKTUN1RSEGRB02TCW6JMZEN.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CoreText"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CoreTransferable.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreTransferable-7E9EA5MDF4K2RT3RYETJSCUDN.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreTransferable-4ZY8QAABRPQD1R58MPLUY9YE1.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CoreTransferable"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/CoreVideo.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreVideo-7V843J57TCGOOQMU28KVRFPPF.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/CoreVideo-BINT9NTBMZ2JCJI74UR18IKUH.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "CoreVideo"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/Darwin.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Darwin-AADG60DM9GBDPGCMLLW9R5G3U.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Darwin-8J0AH97B8PE1OIP1EUY49UIWW.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "Darwin"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/DataDetection.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/DataDetection-EP1XP8C5R43BSE1JALQVGM7E2.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/DataDetection-3OLQE78IRBEKO9P6SRX6OHFNA.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "DataDetection"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/DeveloperToolsSupport.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/DeveloperToolsSupport-4TTYYJ3MA23GU0TP8028YEMHN.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/DeveloperToolsSupport-74NJR7WUFE5L109TYG3WP9XBN.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "DeveloperToolsSupport"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/DiskArbitration.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/DiskArbitration-29IJSQ6DBD9UUL0NIO1MFEESO.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/DiskArbitration-EPF0MGHJW774KFNYX5VUN8YWG.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "DiskArbitration"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/dispatch.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Dispatch-D4R852IOBEDFZQP8HZ33L63B5.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Dispatch-1FBSGN1Z08UUOLD306L23HMTO.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "Dispatch"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/Foundation.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Foundation-EW0IYC4OZNEN88CK71UGQHRZG.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Foundation-8B1RXU2N51IR3GE3H8FT1UQEV.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "Foundation"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/IOKit.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/IOKit-E39HP5IJGCSL2LVB3XUUWVNYL.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/IOKit-1PHGZE2NV7YKRL63BXKHPHUSO.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "IOKit"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/IOSurface.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/IOSurface-6HXA3PHA8EHLF6CDYKF7HWM64.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/IOSurface-CPTAN1JJZS91YRO943PAF7IXK.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "IOSurface"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/ImageIO.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ImageIO-9GKO14QCGNT0KCTUZE8IRTG2O.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ImageIO-65FW0I0EBAIBOF9YWP8XRNH07.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "ImageIO"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/DarwinBasic.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/MachO-73XRSS4SSIZXMUEUM8SSDKCPW.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/MachO-83TX4IU7FSIYJC0RS5LU7FZ2Z.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "MachO"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/Metal.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Metal-9SNNL3QEUBLIPGABS8DL38PPE.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Metal-866BNL80E9XE79TSKYAQYPHKG.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "Metal"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/OSLog.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/OSLog-9KNCCJYP42V9MVOQVNGVUFUF0.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/OSLog-EYWEJZ2UL0JGDG1A1XR21YYPE.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "OSLog"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/ObjectiveC.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ObjectiveC-W7KRBHNLUV9O5NGGK2EF58LN.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ObjectiveC-AEG8ZI67WCMWCGDR923IDZ9Y2.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "ObjectiveC"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/OpenGL.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/OpenGL-BQWUW1LVH3YK7G7ZNNN72QOMA.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/OpenGL-6GF96QSLXOOM8PTWDZ9PB0CNF.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "OpenGL"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/QuartzCore.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/QuartzCore-63NO5V7FO2RXHTC6QF89J1FNZ.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/QuartzCore-6KMBC7BDONLG9SZG0UO6GPQZQ.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "QuartzCore"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/QuickLook.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/QuickLook-DZA6PEBR3ZRQ9KSE1IUAI9CVF.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/QuickLook-4MSARL3XWVC0PPNOSWVPI6CUJ.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "QuickLook"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/Security.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Security-DUXFIY3HP13PNZG37WNF186VM.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Security-CECX8H164DXZQX3L6MI38MURA.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "Security"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/Spatial\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Spatial-95O0ESW9B78EE7KACYHFT8055.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Spatial-2D60ZQCBJRD6ABM1B3Z7YR0AG.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "Spatial"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/lib\/swift\/shims\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftShims-7M3OBOEG57KLZQ9YSBK9ZNTAG.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftShims-B7VZYHDIYBLPFOTQOYK8HV8N6.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "SwiftShims"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/SwiftUI.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftUI-5O7IH8SDJQ02LKN8R38STXJEM.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftUI-15B9LI50OEVZJK6IKLXE7WGUQ.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "SwiftUI"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/SwiftUICore.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftUICore-I3WLUX4MC0U05VY5I9BKFBN.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/SwiftUICore-8A94531BDYS1I7A0J8ZCHOAJ1.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "SwiftUICore"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/Symbols.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Symbols-A8OZLFPOO7BRAEMN7UTU4MKBE.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/Symbols-BEAHSJ9V3VYS4RAL7YTDVU394.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "Symbols"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/System\/Library\/Frameworks\/UniformTypeIdentifiers.framework\/Modules\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/UniformTypeIdentifiers-5HO399WEP0KO3RVYZPDEF7OM9.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/UniformTypeIdentifiers-6LEY2U3VP6URI56FJEA7ZLNMV.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "UniformTypeIdentifiers"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/xpc.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/XPC-CWLEW3J4GLWNMZBTY66L4UBB8.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/XPC-OMX03B7PFD3SY2UJHL9BZF1E.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "XPC"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/DarwinFoundation1.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_AvailabilityInternal-16PTV1GNSXFFGEFZYGCTHGRPL.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_AvailabilityInternal-8SIO315HZ5PXN8EJ0NVR1UP28.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_AvailabilityInternal"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_float-EKIGNFI9NQXW53LJN767IOAEA.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_float-7VFFSDTA5SZVE1HL7SI09Q8ZP.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_Builtin_float"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_intrinsics-8BVGVOCKKATGLUBOIWXZOIIRS.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_intrinsics-8QII58YKVF9HEA9279WRUGL6X.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_Builtin_intrinsics"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_inttypes-80KZCADZK5ILZF9CC0F2434WA.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_inttypes-VOL6PRB60G81ZQVYS91JRBQE.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_Builtin_inttypes"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_limits-E3PP00F7EWV5TTZL96EU20094.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_limits-GKU2MTZRTTCDFDAR1LXS7PZS.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_Builtin_limits"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_stdarg-BOKFO7ESIH238AXVJW3HTVPV8.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_stdarg-TOILDVR4UITQ86EKLK9X4747.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_Builtin_stdarg"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_stdatomic-MHQDYMZZJCRLZBI873TDR67U.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_stdatomic-CUX63ETNP3412EYBEVHMEYA9Y.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_Builtin_stdatomic"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_stdbool-DXE627WXR18O7M2PMP4OZ5BQU.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_stdbool-7TZGRJ0LYEBYPDHSBEXZA48RA.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_Builtin_stdbool"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_stddef-93E5A8AEPUNZNXBWFUFQEXMW7.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_stddef-DIQ0DXUDI1EGWBVFB4WNP6JQ7.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_Builtin_stddef"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_stdint-2EFNR53L0MO4MFEUTXT34UNYT.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_stdint-3SH2DTVBAAE2MIFJ0B46Q4UDK.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_Builtin_stdint"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_tgmath-8E5Q9CXJ3A45N4M87P6ZDHHZI.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_Builtin_tgmath-D80C0VRNNFZUOSNJK1Y17OT53.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_Builtin_tgmath"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/DarwinFoundation1.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation1-CA3E3PQ424C7GWU2BCLB7MAN4.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation1-77B97VRFR2279PI842B46RME2.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_DarwinFoundation1"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/DarwinFoundation2.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation2-5JT10YH43224N6JJ0JDJ9YC5R.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation2-1YBNHE5SP4R9UFM5MTL4G85HK.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_DarwinFoundation2"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/DarwinFoundation3.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation3-2MLL188ZJ7F6LFL0YMBXVG78M.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_DarwinFoundation3-DSXRR53QGAZ6LAZVB2YPAHG9O.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_DarwinFoundation3"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/lib\/swift\/shims\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_SwiftConcurrencyShims-25GLMX7YCDZJA26NEZLAOLELT.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/_SwiftConcurrencyShims-4R27TZWVAFYBWLHLFEFUONKMB.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "_SwiftConcurrencyShims"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/launch.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/launch-6YIXUKP90LX6CJ9JL25ZS6FI4.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/launch-3CCCGPM9VUL0BFUT4WZUIKABW.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "launch"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/libDER\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/libDER-1EH9QAW10VI27AVDSCP29KZ2.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/libDER-BGRGM5YMW04DXRPG7WOKJ5HG5.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "libDER"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/libkern.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/libkern-MGXNAETW3NPQTEP6G39GGT1E.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/libkern-4CH5FO1V3102RLEW7SEUCA3OP.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "libkern"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/os.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/os-ADV2TG9K38ULY056P3F3WH957.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/os-A0ELBQ5749OWMTTKD98NSA5TP.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "os"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/os.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/os_object-BS0T8LX8LQEBUH1AYYG3PX1TP.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/os_object-EMXDYVDLGJGV5WW7XYI8IXR0O.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "os_object"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/os.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/os_workgroup-23WC4FDL4MI30AVSV215E5V5D.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/os_workgroup-AJ1I0XCLXV7SEHY8S6IA3PEEJ.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "os_workgroup"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ptrauth-4ZVN16B6NUL2C54VI43U79Y1N.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ptrauth-7GDWWZEM6WWASH9D6TOKDDNBC.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "ptrauth"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/usr\/lib\/clang\/21\/include\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ptrcheck-8GTNZLSQFB52SB0SJN5BXQEKI.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/ptrcheck-F4U2JLEG7MP6RI6UGLFU8J0LD.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "ptrcheck"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/simd\/module.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/simd-4Q8A107894H5U5DW3Q80IY2U0.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/simd-6NOYPFN3J65ICUZJ75R6FR5YA.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "simd"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/c_standard_library.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/string_h-CQUS3INM2GO07GFPEULL4U0ZU.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/string_h-ASCCO2YR0S5Q8Q36SENL6Y2Q7.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "string_h"
   },
   {
     "clangModuleMapPath" : "\/Library\/Developer\/CommandLineTools\/SDKs\/MacOSX27.0.sdk\/usr\/include\/DarwinFoundation2.modulemap",
-    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/sys_types-1TQSNXWWF74UH0JR4PQ3K57NS.pcm",
+    "clangModulePath" : "\/Volumes\/Iris-Data\/Download\/AI\/文件管理系统\/flowfinder-native\/FlowFinderNative\/.build\/out\/SDKExplicitPrecompiledModules\/sys_types-BXJ4LOIVKV5QVODGL7MO2ZXWA.pcm",
     "isBridgingHeaderDependency" : false,
     "isFramework" : false,
     "moduleName" : "sys_types"

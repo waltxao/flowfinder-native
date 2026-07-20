@@ -5,11 +5,11 @@
       "name" : "FlowFinderNative",
       "path" : "/Volumes/Iris-Data/Download/AI/文件管理系统/flowfinder-native/FlowFinderNative",
       "projects" : [
-        "c6b97807250dce5101601b4122b3c6b56d3df8dd091146bb20bbcd745c6e7d2d",
+        "9071f33a926a64845deaf0e7fcd3a961a58b026ff0e1e7c196d9c24c13c9a35a",
         "b116f2ff5289d64983b1113dd780f7594ddfa4574a61e490aff227caed7b3502"
       ]
     },
-    "signature" : "17cbd113aa34bb5bc1d39207eabf9a8969add0b77c2754b40679d3e1bad80923",
+    "signature" : "4b85776238acd5aa3c4f30ae0c8a7a7dc4cade47edb6d06ef79bce4a89403bd3",
     "type" : "workspace"
   },
   {
@@ -515,12 +515,12 @@
       "projectIsPackage" : "true",
       "projectName" : "FlowFinderNative",
       "targets" : [
-        "04017cb0f22c9748794c26286f5932d19a2d9db744dba04f80fb2e9764e8bd25",
-        "5365d13d3528beb3086e427095eec6bf3a17d5568575a54b8433c5ee29fc7bca",
+        "7a81ffc51db496507ffe2b22d60038daa511ef0c915a5a730115b90bc0d940a2",
+        "acde90f66c2392f090008267de114e6b5e2ae864aebbf2be371ed48894673e80",
         "9d221e396abc4a5924d58991b84d655e6bc8401c4b770ad13df94c8fa2e2e9c3"
       ]
     },
-    "signature" : "c6b97807250dce5101601b4122b3c6b56d3df8dd091146bb20bbcd745c6e7d2d",
+    "signature" : "9071f33a926a64845deaf0e7fcd3a961a58b026ff0e1e7c196d9c24c13c9a35a",
     "type" : "project"
   },
   {
@@ -540,9 +540,9 @@
               "$(inherited)",
               "-L",
               "../rust-core/target/debug",
-              "-lflowfinder_core",
               "-framework",
-              "QuickLook"
+              "QuickLook",
+              "-lflowfinder_core"
             ],
             "OTHER_SWIFT_FLAGS" : [
               "$(inherited)",
@@ -599,9 +599,9 @@
               "$(inherited)",
               "-L",
               "../rust-core/target/debug",
-              "-lflowfinder_core",
               "-framework",
-              "QuickLook"
+              "QuickLook",
+              "-lflowfinder_core"
             ],
             "OTHER_SWIFT_FLAGS" : [
               "$(inherited)",
@@ -835,7 +835,7 @@
       "productTypeIdentifier" : "com.apple.product-type.tool",
       "type" : "standard"
     },
-    "signature" : "04017cb0f22c9748794c26286f5932d19a2d9db744dba04f80fb2e9764e8bd25",
+    "signature" : "7a81ffc51db496507ffe2b22d60038daa511ef0c915a5a730115b90bc0d940a2",
     "type" : "target"
   },
   {
@@ -855,9 +855,9 @@
               "$(inherited)",
               "-L",
               "../rust-core/target/debug",
-              "-lflowfinder_core",
               "-framework",
-              "QuickLook"
+              "QuickLook",
+              "-lflowfinder_core"
             ],
             "OTHER_SWIFT_FLAGS" : [
               "$(inherited)",
@@ -917,9 +917,9 @@
                 "$(inherited)",
                 "-L",
                 "../rust-core/target/debug",
-                "-lflowfinder_core",
                 "-framework",
-                "QuickLook"
+                "QuickLook",
+                "-lflowfinder_core"
               ]
             }
           },
@@ -938,9 +938,9 @@
               "$(inherited)",
               "-L",
               "../rust-core/target/debug",
-              "-lflowfinder_core",
               "-framework",
-              "QuickLook"
+              "QuickLook",
+              "-lflowfinder_core"
             ],
             "OTHER_SWIFT_FLAGS" : [
               "$(inherited)",
@@ -999,9 +999,9 @@
                 "$(inherited)",
                 "-L",
                 "../rust-core/target/debug",
-                "-lflowfinder_core",
                 "-framework",
-                "QuickLook"
+                "QuickLook",
+                "-lflowfinder_core"
               ]
             }
           },
@@ -1197,7 +1197,7 @@
       "productTypeIdentifier" : "org.swift.product-type.common.object",
       "type" : "standard"
     },
-    "signature" : "5365d13d3528beb3086e427095eec6bf3a17d5568575a54b8433c5ee29fc7bca",
+    "signature" : "acde90f66c2392f090008267de114e6b5e2ae864aebbf2be371ed48894673e80",
     "type" : "target"
   },
   {
