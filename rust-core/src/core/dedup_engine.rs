@@ -74,12 +74,12 @@ pub enum DedupEvent {
     },
 }
 
-/// Convert an MD5 [`Digest`](md5::Digest) into a lowercase hex string.
-fn digest_to_hex(digest: md5::Digest) -> String {
-    digest.0.iter().map(|b| format!("{:02x}", b)).collect()
+/// Convert a blake3 hash into a lowercase hex string.
+fn blake3_to_hex(hash: blake3::Hash) -> String {
+    hash.to_hex().to_string()
 }
 
-/// Compute a partial MD5 hash of `path`.
+/// Compute a partial blake3 hash of `path`.
 ///
 /// For files smaller than 8 KB the entire content is hashed. For larger
 /// files the first 4 KB and the last 4 KB are hashed (head + tail). This is
@@ -88,7 +88,7 @@ fn partial_hash(path: &str, size: u64) -> std::io::Result<String> {
     use std::io::{Read, Seek, SeekFrom};
 
     let mut file = std::fs::File::open(path)?;
-    let mut ctx = md5::Context::new();
+    let mut hasher = blake3::Hasher::new();
 
     if size < SMALL_FILE_THRESHOLD {
         // Small file — hash everything.
@@ -98,39 +98,39 @@ fn partial_hash(path: &str, size: u64) -> std::io::Result<String> {
             if n == 0 {
                 break;
             }
-            ctx.consume(&buf[..n]);
+            hasher.update(&buf[..n]);
         }
     } else {
         // Hash the first 4 KB …
         let mut head = [0u8; PARTIAL_CHUNK];
         let n = file.read(&mut head)?;
-        ctx.consume(&head[..n]);
+        hasher.update(&head[..n]);
 
         // … and the last 4 KB.
         file.seek(SeekFrom::End(-(PARTIAL_CHUNK as i64)))?;
         let mut tail = [0u8; PARTIAL_CHUNK];
         let n = file.read(&mut tail)?;
-        ctx.consume(&tail[..n]);
+        hasher.update(&tail[..n]);
     }
 
-    Ok(digest_to_hex(ctx.compute()))
+    Ok(blake3_to_hex(hasher.finalize()))
 }
 
-/// Compute a full MD5 hash of `path`.
+/// Compute a full blake3 hash of `path`.
 fn full_hash(path: &str) -> std::io::Result<String> {
     use std::io::Read;
 
     let mut file = std::fs::File::open(path)?;
-    let mut ctx = md5::Context::new();
+    let mut hasher = blake3::Hasher::new();
     let mut buf = [0u8; 65_536];
     loop {
         let n = file.read(&mut buf)?;
         if n == 0 {
             break;
         }
-        ctx.consume(&buf[..n]);
+        hasher.update(&buf[..n]);
     }
-    Ok(digest_to_hex(ctx.compute()))
+    Ok(blake3_to_hex(hasher.finalize()))
 }
 
 /// Build a [`DuplicateFile`] from a filesystem path.
@@ -393,5 +393,44 @@ mod tests {
             events.iter().any(|e| matches!(e, DedupEvent::Done { groups: 0 })),
             "expected Done with 0 groups on cancel"
         );
+    }
+
+    #[test]
+    fn test_partial_hash_small_file() {
+        let dir = std::env::temp_dir();
+        let path = dir.join("test_small_blake3.txt");
+        std::fs::write(&path, b"hello world").unwrap();
+        let hash = partial_hash(path.to_str().unwrap(), 11).unwrap();
+        assert!(!hash.is_empty());
+        assert_eq!(hash.len(), 64); // blake3 hex = 32 bytes = 64 chars
+        std::fs::remove_file(&path).ok();
+    }
+
+    #[test]
+    fn test_full_hash_large_file() {
+        use std::io::Write;
+        let dir = std::env::temp_dir();
+        let path = dir.join("test_large_blake3.bin");
+        let mut file = std::fs::File::create(&path).unwrap();
+        let data = vec![0xABu8; 16384];
+        file.write_all(&data).unwrap();
+        drop(file);
+        let hash = full_hash(path.to_str().unwrap()).unwrap();
+        assert_eq!(hash.len(), 64);
+        std::fs::remove_file(&path).ok();
+    }
+
+    #[test]
+    fn test_same_file_same_hash() {
+        let dir = std::env::temp_dir();
+        let path1 = dir.join("test_same_1.txt");
+        let path2 = dir.join("test_same_2.txt");
+        std::fs::write(&path1, b"identical content").unwrap();
+        std::fs::write(&path2, b"identical content").unwrap();
+        let hash1 = full_hash(path1.to_str().unwrap()).unwrap();
+        let hash2 = full_hash(path2.to_str().unwrap()).unwrap();
+        assert_eq!(hash1, hash2);
+        std::fs::remove_file(&path1).ok();
+        std::fs::remove_file(&path2).ok();
     }
 }
