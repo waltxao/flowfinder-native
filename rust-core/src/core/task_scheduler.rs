@@ -447,37 +447,7 @@ pub extern "C" fn ff_task_cancel(id: c_int) -> c_int {
     }
 }
 
-/// List all active tasks.
-///
-/// # Arguments
-/// - `callback` — Called for each task.
-/// - `user_data` — Opaque pointer passed to callback.
-///
-/// # Returns
-/// - `FF_OK` on success.
-#[no_mangle]
-pub extern "C" fn ff_task_list(
-    callback: FFTaskListCallback,
-    user_data: *mut c_void,
-) -> c_int {
-    let tasks = scheduler().list_tasks();
-    
-    for task in tasks {
-        let type_c = CString::new(task.task_type.as_str()).unwrap_or_default();
-        let status_c = CString::new(task.status.as_str()).unwrap_or_default();
-        
-        callback(
-            task.id,
-            type_c.as_ptr(),
-            status_c.as_ptr(),
-            task.progress,
-            task.created_at,
-            user_data,
-        );
-    }
-
-    FF_OK
-}
+// ff_task_list 已移至 ffi/mod.rs，使用 FFTaskInfo 结构体指针回调（与 ff_ffi.h 对齐）
 
 /// Get progress for a specific task.
 ///

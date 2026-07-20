@@ -1673,14 +1673,9 @@ pub struct FFVolumeInfo {
     pub is_writable: bool,
 }
 
-/// Callback for volume list
+/// Callback for volume list (passes FFVolumeInfo struct pointer, aligned with ff_ffi.h)
 pub type FFVolumeCallback = extern "C" fn(
-    path: *const c_char,
-    name: *const c_char,
-    fs_type: *const c_char,
-    total_size: u64,
-    free_size: u64,
-    is_removable: bool,
+    volume: *const FFVolumeInfo,
     user_data: *mut c_void,
 );
 
@@ -1739,7 +1734,7 @@ pub type FFTaskListCallback = extern "C" fn(
     user_data: *mut c_void,
 );
 
-/// List all tasks (FFI wrapper with FFTaskInfo struct)
+/// List all tasks (FFI wrapper with FFTaskInfo struct).
 ///
 /// # Arguments
 /// - `callback` — Called for each task with raw task info pointer
@@ -1748,7 +1743,7 @@ pub type FFTaskListCallback = extern "C" fn(
 /// # Returns
 /// - `FF_OK` on success
 #[no_mangle]
-pub extern "C" fn ff_task_list_ex(
+pub extern "C" fn ff_task_list(
     callback: extern "C" fn(*const FFTaskInfo, *mut c_void),
     user_data: *mut c_void,
 ) -> c_int {
@@ -2025,12 +2020,7 @@ mod tests {
     #[test]
     fn test_ff_volume_list() {
         extern "C" fn volume_callback(
-            _path: *const c_char,
-            _name: *const c_char,
-            _volume_type: *const c_char,
-            _total_capacity: u64,
-            _free_space: u64,
-            _is_removable: bool,
+            _volume: *const FFVolumeInfo,
             _user_data: *mut c_void,
         ) {}
 

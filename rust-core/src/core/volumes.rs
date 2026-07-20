@@ -10,6 +10,8 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
+use crate::ffi::{FFVolumeCallback, FFVolumeInfo};
+
 // ── Error codes ─────────────────────────────────────────────────────
 
 const FF_OK: c_int = 0;
@@ -280,16 +282,7 @@ impl VolumeManager {
 
 // ── Callback Types ────────────────────────────────────────────────
 
-/// Callback for volume listing
-pub type FFVolumeCallback = extern "C" fn(
-    path: *const c_char,
-    name: *const c_char,
-    volume_type: *const c_char,
-    total_capacity: u64,
-    free_space: u64,
-    is_removable: bool,
-    user_data: *mut c_void,
-);
+// FFVolumeCallback 已移至 crate::ffi，此处直接导入使用
 
 /// Callback for volume info
 pub type FFVolumeInfoCallback = extern "C" fn(
@@ -335,19 +328,30 @@ pub extern "C" fn ff_volume_list(
     let volumes = manager.list_volumes();
 
     for volume in volumes {
-        let path_c = CString::new(volume.path.clone()).unwrap_or_default();
         let name_c = CString::new(volume.name.clone()).unwrap_or_default();
-        let type_c = CString::new(volume.volume_type.as_str()).unwrap_or_default();
+        let path_c = CString::new(volume.path.clone()).unwrap_or_default();
+        let fs_c = CString::new(volume.filesystem.clone()).unwrap_or_default();
 
-        callback(
-            path_c.as_ptr(),
-            name_c.as_ptr(),
-            type_c.as_ptr(),
-            volume.total_capacity,
-            volume.free_space,
-            volume.is_removable,
-            user_data,
-        );
+        let c_vol = FFVolumeInfo {
+            name: name_c.into_raw(),
+            path: path_c.into_raw(),
+            fs_type: fs_c.into_raw(),
+            total_size: volume.total_capacity,
+            free_size: volume.free_space,
+            used_size: volume.used_space,
+            is_removable: volume.is_removable,
+            is_ejectable: volume.is_ejectable,
+            is_writable: !volume.is_network,
+        };
+
+        callback(&c_vol, user_data);
+
+        // 释放 CString 内存（回调返回后回收）
+        unsafe {
+            let _ = CString::from_raw(c_vol.name);
+            let _ = CString::from_raw(c_vol.path);
+            let _ = CString::from_raw(c_vol.fs_type);
+        }
     }
 
     FF_OK
