@@ -687,6 +687,10 @@ extension MainWindowController {
         TaskPanelWindowController.shared.showWindow()
     }
 
+    @objc func menuSettings(_ sender: Any?) {
+        SettingsWindowController.shared.showWindow()
+    }
+
     // MARK: - Helpers
 
     private var activePaneViewModel: PaneViewModel {
