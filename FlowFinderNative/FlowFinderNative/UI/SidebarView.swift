@@ -24,26 +24,28 @@ class SidebarView: NSView {
     }
 
     private func setupUI() {
+        // 透明背景，依赖 MainWindowController 的 NSVisualEffectView 玻璃态
         wantsLayer = true
-        layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
+        layer?.backgroundColor = NSColor.clear.cgColor
 
-        scrollView = NSScrollView(frame: bounds)
-        scrollView.autoresizingMask = [.width, .height]
+        scrollView = NSScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         scrollView.autohidesScrollers = true
+        scrollView.drawsBackground = false
 
-        outlineView = NSOutlineView(frame: scrollView.bounds)
-        outlineView.autoresizingMask = [.width, .height]
+        outlineView = NSOutlineView()
         outlineView.allowsMultipleSelection = false
         outlineView.dataSource = dataSource
         outlineView.delegate = dataSource
         outlineView.headerView = nil  // 无表头
         outlineView.rowHeight = 24
         outlineView.indentationPerLevel = 12
+        outlineView.backgroundColor = NSColor.clear
 
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("SidebarItem"))
-        column.width = bounds.width
+        column.width = 200
         outlineView.addTableColumn(column)
         outlineView.outlineTableColumn = column
 
@@ -56,12 +58,42 @@ class SidebarView: NSView {
         scrollView.documentView = outlineView
         addSubview(scrollView)
 
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
+
+        // 监听卷挂载/卸载通知
+        let nc = NSWorkspace.shared.notificationCenter
+        nc.addObserver(self, selector: #selector(handleVolumeMount(_:)),
+                       name: NSWorkspace.didMountNotification, object: nil)
+        nc.addObserver(self, selector: #selector(handleVolumeUnmount(_:)),
+                       name: NSWorkspace.didUnmountNotification, object: nil)
+
         // 展开所有区域
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             for section in SidebarSection.allCases {
                 self.outlineView.expandItem(section)
             }
+        }
+    }
+
+    deinit {
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
+    }
+
+    @objc private func handleVolumeMount(_ notification: Notification) {
+        DispatchQueue.main.async { [weak self] in
+            self?.refreshDevices()
+        }
+    }
+
+    @objc private func handleVolumeUnmount(_ notification: Notification) {
+        DispatchQueue.main.async { [weak self] in
+            self?.refreshDevices()
         }
     }
 
