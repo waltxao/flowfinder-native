@@ -24,6 +24,8 @@ public class MainWindowController: NSWindowController {
     private var rightPaneToolbar: PaneToolbar!
     private var leftFileListView: FileListView!
     private var rightFileListView: FileListView!
+    private var leftFileGridView: FileGridView!
+    private var rightFileGridView: FileGridView!
 
     // MARK: - Initialization
 
@@ -37,10 +39,14 @@ public class MainWindowController: NSWindowController {
         window.title = "FlowFinder"
         window.minSize = NSSize(width: 1000, height: 700)
         window.center()
+        window.makeKeyAndOrderFront(nil)
         window.setFrameAutosaveName("MainWindow")
         window.isRestorable = true
 
         super.init(window: window)
+
+        // 确保窗口可以接收键盘事件
+        window.acceptsMouseMovedEvents = true
 
         setupUI()
         setupBindings()
@@ -94,6 +100,26 @@ public class MainWindowController: NSWindowController {
             leftFileListView.bottomAnchor.constraint(equalTo: leftPaneContainer.bottomAnchor),
         ])
 
+        // Left Grid View（初始隐藏）
+        leftFileGridView = FileGridView()
+        leftFileGridView.identifier = NSUserInterfaceItemIdentifier("left")
+        leftFileGridView.translatesAutoresizingMaskIntoConstraints = false
+        leftFileGridView.isHidden = true
+        leftFileGridView.onDoubleClick = { [weak self] entry in
+            self?.handleDoubleClick(entry, side: .left)
+        }
+        leftFileGridView.onSelectionChanged = { [weak self] files in
+            self?.handleSelectionChanged(side: .left, files: files)
+        }
+        leftPaneContainer.addSubview(leftFileGridView)
+
+        NSLayoutConstraint.activate([
+            leftFileGridView.topAnchor.constraint(equalTo: leftPaneToolbar.bottomAnchor),
+            leftFileGridView.leadingAnchor.constraint(equalTo: leftPaneContainer.leadingAnchor),
+            leftFileGridView.trailingAnchor.constraint(equalTo: leftPaneContainer.trailingAnchor),
+            leftFileGridView.bottomAnchor.constraint(equalTo: leftPaneContainer.bottomAnchor),
+        ])
+
         // Right Pane
         rightPaneToolbar = PaneToolbar()
         rightPaneToolbar.delegate = self
@@ -125,6 +151,26 @@ public class MainWindowController: NSWindowController {
             rightFileListView.leadingAnchor.constraint(equalTo: rightPaneContainer.leadingAnchor),
             rightFileListView.trailingAnchor.constraint(equalTo: rightPaneContainer.trailingAnchor),  // 修复 bug: 原来错误地约束到 leadingAnchor
             rightFileListView.bottomAnchor.constraint(equalTo: rightPaneContainer.bottomAnchor),
+        ])
+
+        // Right Grid View（初始隐藏）
+        rightFileGridView = FileGridView()
+        rightFileGridView.identifier = NSUserInterfaceItemIdentifier("right")
+        rightFileGridView.translatesAutoresizingMaskIntoConstraints = false
+        rightFileGridView.isHidden = true
+        rightFileGridView.onDoubleClick = { [weak self] entry in
+            self?.handleDoubleClick(entry, side: .right)
+        }
+        rightFileGridView.onSelectionChanged = { [weak self] files in
+            self?.handleSelectionChanged(side: .right, files: files)
+        }
+        rightPaneContainer.addSubview(rightFileGridView)
+
+        NSLayoutConstraint.activate([
+            rightFileGridView.topAnchor.constraint(equalTo: rightPaneToolbar.bottomAnchor),
+            rightFileGridView.leadingAnchor.constraint(equalTo: rightPaneContainer.leadingAnchor),
+            rightFileGridView.trailingAnchor.constraint(equalTo: rightPaneContainer.trailingAnchor),
+            rightFileGridView.bottomAnchor.constraint(equalTo: rightPaneContainer.bottomAnchor),
         ])
 
         // Pane Split View (left/right panes)
@@ -206,6 +252,106 @@ public class MainWindowController: NSWindowController {
         )
     }
 
+    // MARK: - Keyboard Events
+
+    public override func keyDown(with event: NSEvent) {
+        let modifiers = event.modifierFlags
+
+        // Space: QuickLook 预览
+        if event.keyCode == 49 && modifiers.isEmpty {
+            handleQuickLook()
+            return
+        }
+
+        // Enter: 打开/重命名
+        if event.keyCode == 36 && modifiers.isEmpty {
+            handleEnterKey()
+            return
+        }
+
+        // ⌘1: 列表视图
+        if event.keyCode == 18 && modifiers.contains(.command) {
+            activePaneViewModel.setViewMode(.list)
+            updateViewMode(side: activePane, mode: .list)
+            return
+        }
+
+        // ⌘2: 网格视图
+        if event.keyCode == 19 && modifiers.contains(.command) {
+            activePaneViewModel.setViewMode(.grid)
+            updateViewMode(side: activePane, mode: .grid)
+            return
+        }
+
+        // ⌘D: 复制选中项
+        if event.keyCode == 2 && modifiers.contains(.command) {
+            duplicateSelected()
+            return
+        }
+
+        super.keyDown(with: event)
+    }
+
+    // MARK: - Quick Look
+
+    private func handleQuickLook() {
+        let selected = activePaneViewModel.selectedFiles
+        guard !selected.isEmpty else { return }
+
+        // 获取当前面板所有可预览的文件（排除文件夹）
+        let previewableFiles = activePaneViewModel.files.filter { !$0.isDirectory }
+        let paths = previewableFiles.map { $0.path }
+
+        // 找到当前选中文件的索引
+        let currentPath = selected.first?.path
+        let currentIndex = paths.firstIndex(of: currentPath ?? "") ?? 0
+
+        QuickLookPreviewPanel.shared.togglePreview(files: paths, currentIndex: currentIndex)
+    }
+
+    // MARK: - Enter Key
+
+    private func handleEnterKey() {
+        guard let entry = activePaneViewModel.selectedFiles.first else { return }
+        if entry.isDirectory {
+            activePaneViewModel.navigate(to: entry.path)
+        } else {
+            NSWorkspace.shared.openFile(entry.path)
+        }
+    }
+
+    // MARK: - Duplicate
+
+    private func duplicateSelected() {
+        let selected = activePaneViewModel.selectedFiles
+        guard !selected.isEmpty else { return }
+
+        let destPath = activePaneViewModel.currentPath
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            for entry in selected {
+                let fileName = entry.name
+                let ext = (fileName as NSString).pathExtension
+                let baseName = (fileName as NSString).deletingPathExtension
+                let copyName = ext.isEmpty ? "\(baseName) 副本" : "\(baseName) 副本.\(ext)"
+                let dstPath = (destPath as NSString).appendingPathComponent(copyName)
+
+                do {
+                    try CoreBridge.shared.copyFile(src: entry.path, dst: dstPath)
+                } catch {
+                    DispatchQueue.main.async {
+                        self?.showError(error: error)
+                    }
+                    return
+                }
+            }
+
+            DispatchQueue.main.async {
+                self?.activePaneViewModel.refresh()
+            }
+        }
+    }
+
     // MARK: - UI Updates
 
     private func updatePaneUI(side: PaneSide, state: PaneState) {
@@ -219,6 +365,14 @@ public class MainWindowController: NSWindowController {
 
         fileListView?.viewModel = side == .left ? leftPaneViewModel : rightPaneViewModel
         fileListView?.reloadData()
+
+        // 更新网格视图
+        let grid = side == .left ? leftFileGridView : rightFileGridView
+        grid?.viewModel = side == .left ? leftPaneViewModel : rightPaneViewModel
+        grid?.reloadData()
+
+        // 视图模式切换
+        updateViewMode(side: side, mode: state.viewMode)
     }
 
     private func updateActivePaneVisual() {
@@ -226,6 +380,20 @@ public class MainWindowController: NSWindowController {
         leftPaneContainer.layer?.borderColor = NSColor.controlAccentColor.cgColor
         rightPaneContainer.layer?.borderWidth = activePane == .right ? 2 : 0
         rightPaneContainer.layer?.borderColor = NSColor.controlAccentColor.cgColor
+    }
+
+    private func updateViewMode(side: PaneSide, mode: ViewMode) {
+        let listView = side == .left ? leftFileListView : rightFileListView
+        let gridView = side == .left ? leftFileGridView : rightFileGridView
+
+        switch mode {
+        case .list:
+            listView?.isHidden = false
+            gridView?.isHidden = true
+        case .grid:
+            listView?.isHidden = true
+            gridView?.isHidden = false
+        }
     }
 
     private func loadInitialDirectories() {
