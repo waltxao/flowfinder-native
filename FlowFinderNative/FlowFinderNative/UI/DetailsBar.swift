@@ -41,7 +41,9 @@ class DetailsBar: NSView {
         // Collapse button
         collapseButton = NSButton()
         collapseButton.title = ""
+        collapseButton.image = NSImage(systemSymbolName: "chevron.down", accessibilityDescription: "折叠")
         collapseButton.bezelStyle = .texturedRounded
+        collapseButton.imagePosition = .imageOnly
         collapseButton.target = self
         collapseButton.action = #selector(collapseClicked)
         collapseButton.translatesAutoresizingMaskIntoConstraints = false
@@ -198,20 +200,34 @@ class DetailsBar: NSView {
         return formatter.string(from: date)
     }
 
+    /// 折叠状态的高度约束引用（用于 Auto Layout 动画）
+    private var heightConstraint: NSLayoutConstraint?
+
     @objc private func collapseClicked() {
         collapsed.toggle()
-        if collapsed {
-            // Show collapsed state
-            for subview in subviews {
-                subview.isHidden = subview == iconView || subview == collapseButton
-            }
-            frame.size.height = 24
-        } else {
-            // Show expanded state
-            for subview in subviews {
-                subview.isHidden = false
-            }
-            frame.size.height = 120
+
+        // 更新按钮图标
+        let symbolName = collapsed ? "chevron.right" : "chevron.down"
+        collapseButton.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: collapsed ? "展开" : "折叠")
+
+        // 隐藏/显示详情字段（保留图标和折叠按钮可见）
+        let detailViews: [NSView] = [nameField, typeField, sizeField, modifiedField, createdField, tagsField]
+        for view in detailViews {
+            view.isHidden = collapsed
+        }
+
+        // 通过 Auto Layout 约束改变高度（非直接改 frame）
+        if heightConstraint == nil {
+            heightConstraint = heightAnchor.constraint(equalToConstant: 120)
+            heightConstraint?.isActive = true
+        }
+
+        heightConstraint?.constant = collapsed ? 28 : 120
+
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.25
+            context.allowsImplicitAnimation = true
+            window?.layoutIfNeeded()
         }
     }
 }
