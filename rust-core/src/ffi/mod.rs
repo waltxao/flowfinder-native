@@ -1820,6 +1820,45 @@ pub extern "C" fn ff_task_progress_ex(
     }
 }
 
+/// Calculate the BLAKE3 hash of a file.
+///
+/// # Arguments
+/// - `path` — NUL-terminated UTF-8 path to the file.
+/// - `out_hash` — Pointer to receive the heap-allocated hash string (must be freed with `ff_free_string`).
+///
+/// # Returns
+/// - `FF_OK` on success.
+/// - `FF_ERR_INVALID_PATH` if path or out_hash is null.
+/// - `FF_ERR_IO` on I/O error.
+#[no_mangle]
+pub extern "C" fn ff_hash_file(
+    path: *const c_char,
+    out_hash: *mut *mut c_char,
+) -> c_int {
+    if path.is_null() || out_hash.is_null() {
+        return FF_ERR_INVALID_PATH;
+    }
+
+    let path_str = match unsafe { CStr::from_ptr(path) }.to_str() {
+        Ok(s) => s,
+        Err(_) => return FF_ERR_INVALID_PATH,
+    };
+
+    match crate::core::scanner::hash_file(path_str) {
+        Ok(hash) => {
+            let c_string = CString::new(hash).unwrap_or_default();
+            unsafe {
+                *out_hash = c_string.into_raw();
+            }
+            FF_OK
+        }
+        Err(e) => {
+            set_last_error(e.to_string());
+            FF_ERR_IO
+        }
+    }
+}
+
 // ── Tests ───────────────────────────────────────────────────────────
 
 #[cfg(test)]

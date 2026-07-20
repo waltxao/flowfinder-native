@@ -213,6 +213,9 @@ ff_error_t ff_volume_mount(const char *path, const char *options);
 char *ff_version_string(void);
 uint64_t ff_get_system_memory(void);
 
+/* ── Hashing API ───────────────────────────────────────────── */
+ff_error_t ff_hash_file(const char *path, char **out_hash);
+
 #ifdef __cplusplus
 }
 #endif
