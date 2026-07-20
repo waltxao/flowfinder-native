@@ -291,6 +291,18 @@ public class MainWindowController: NSWindowController {
             self, selector: #selector(handleFileListPaste(_:)),
             name: .fileListDidPaste, object: nil
         )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleFileListCopyToOther(_:)),
+            name: .fileListDidCopyToOther, object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleFileListMoveToOther(_:)),
+            name: .fileListDidMoveToOther, object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleFileListOpenInOther(_:)),
+            name: .fileListDidOpenInOther, object: nil
+        )
     }
 
     // MARK: - Keyboard Events
@@ -621,6 +633,85 @@ extension MainWindowController {
         guard let side = notification.userInfo?["side"] as? String else { return }
         activatePane(side == "left" ? .left : .right)
         menuPaste(self)
+    }
+
+    // MARK: - Cross-Pane Operations
+
+    @objc private func handleFileListCopyToOther(_ notification: Notification) {
+        guard let side = notification.userInfo?["side"] as? String else { return }
+        performCrossPaneOperation(side: side, isMove: false)
+    }
+
+    @objc private func handleFileListMoveToOther(_ notification: Notification) {
+        guard let side = notification.userInfo?["side"] as? String else { return }
+        performCrossPaneOperation(side: side, isMove: true)
+    }
+
+    @objc private func handleFileListOpenInOther(_ notification: Notification) {
+        guard let side = notification.userInfo?["side"] as? String,
+              let path = notification.userInfo?["path"] as? String else { return }
+        let destVM: PaneViewModel = side == "left" ? rightPaneViewModel : leftPaneViewModel
+        destVM.navigate(to: path)
+        let destSide: PaneSide = side == "left" ? .right : .left
+        activatePane(destSide)
+    }
+
+    /// 执行跨面板复制/移动操作
+    private func performCrossPaneOperation(side: String, isMove: Bool) {
+        let sourceVM: PaneViewModel = side == "left" ? leftPaneViewModel : rightPaneViewModel
+        let destVM: PaneViewModel = side == "left" ? rightPaneViewModel : leftPaneViewModel
+        let destPath = destVM.currentPath
+
+        let selectedFiles = sourceVM.selectedFiles
+        guard !selectedFiles.isEmpty else { return }
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            var successCount = 0
+            var failedFiles: [(String, Error)] = []
+
+            for entry in selectedFiles {
+                let srcPath = entry.path
+                let fileName = entry.name
+                var dstPath = (destPath as NSString).appendingPathComponent(fileName)
+
+                // 重名冲突检测 - 添加 "副本" 后缀
+                if FileManager.default.fileExists(atPath: dstPath) {
+                    let ext = (fileName as NSString).pathExtension
+                    let nameWithoutExt = (fileName as NSString).deletingPathExtension
+                    var counter = 1
+                    repeat {
+                        let suffixName = ext.isEmpty ? "\(nameWithoutExt) 副本 \(counter)" : "\(nameWithoutExt) 副本 \(counter).\(ext)"
+                        dstPath = (destPath as NSString).appendingPathComponent(suffixName)
+                        counter += 1
+                    } while FileManager.default.fileExists(atPath: dstPath)
+                }
+
+                do {
+                    if isMove {
+                        try CoreBridge.shared.moveFile(src: srcPath, dst: dstPath)
+                    } else {
+                        try CoreBridge.shared.copyFile(src: srcPath, dst: dstPath)
+                    }
+                    successCount += 1
+                } catch {
+                    failedFiles.append((fileName, error))
+                }
+            }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                // 刷新双方面板
+                sourceVM.refresh()
+                destVM.refresh()
+
+                // 显示错误（如果有）
+                if !failedFiles.isEmpty {
+                    let fileNames = failedFiles.map { $0.0 }.joined(separator: ", ")
+                    self.showError(error: NSError(domain: "FlowFinder", code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "\(failedFiles.count) 个文件操作失败: \(fileNames)"]))
+                }
+            }
+        }
     }
 
     @objc func menuSelectAll(_ sender: Any?) {

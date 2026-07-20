@@ -149,6 +149,10 @@ public class FileListView: NSView {
         menu.addItem(withTitle: "剪切", action: #selector(cutSelected(_:)), keyEquivalent: "x")
         menu.addItem(withTitle: "粘贴", action: #selector(pasteSelected(_:)), keyEquivalent: "v")
         menu.addItem(.separator())
+        menu.addItem(withTitle: "复制到另一面板", action: #selector(copyToOtherPane(_:)), keyEquivalent: "")
+        menu.addItem(withTitle: "移动到另一面板", action: #selector(moveToOtherPane(_:)), keyEquivalent: "")
+        menu.addItem(withTitle: "在对侧面板打开", action: #selector(openInOtherPane(_:)), keyEquivalent: "")
+        menu.addItem(.separator())
         menu.addItem(withTitle: "重命名", action: #selector(renameSelected(_:)), keyEquivalent: "")
         menu.addItem(withTitle: "删除", action: #selector(deleteSelected(_:)), keyEquivalent: "\u{7F}")
         menu.addItem(.separator())
@@ -247,6 +251,21 @@ public class FileListView: NSView {
                 self?.showError(error: error)
             }
         }
+    }
+
+    // MARK: - Cross-Pane Actions
+
+    @objc private func copyToOtherPane(_ sender: Any?) {
+        NotificationCenter.default.post(name: .fileListDidCopyToOther, object: nil, userInfo: ["side": getSide()])
+    }
+
+    @objc private func moveToOtherPane(_ sender: Any?) {
+        NotificationCenter.default.post(name: .fileListDidMoveToOther, object: nil, userInfo: ["side": getSide()])
+    }
+
+    @objc private func openInOtherPane(_ sender: Any?) {
+        guard let entry = clickedEntry else { return }
+        NotificationCenter.default.post(name: .fileListDidOpenInOther, object: nil, userInfo: ["side": getSide(), "path": entry.path])
     }
 
     // MARK: - Drag Source
@@ -537,4 +556,7 @@ extension Notification.Name {
     static let fileListDidCopy = Notification.Name("fileListDidCopy")
     static let fileListDidCut = Notification.Name("fileListDidCut")
     static let fileListDidPaste = Notification.Name("fileListDidPaste")
+    static let fileListDidCopyToOther = Notification.Name("fileListDidCopyToOther")
+    static let fileListDidMoveToOther = Notification.Name("fileListDidMoveToOther")
+    static let fileListDidOpenInOther = Notification.Name("fileListDidOpenInOther")
 }
