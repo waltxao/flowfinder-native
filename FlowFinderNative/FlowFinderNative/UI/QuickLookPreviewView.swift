@@ -1,151 +1,116 @@
 import Cocoa
 import QuickLook
 
-// MARK: - QuickLook Preview Panel
-
-/// QuickLook preview panel using macOS Quick Look framework
-public class QuickLookPreviewPanel: NSObject {
+/// QuickLook 预览面板：使用原生 QLPreviewPanel 单例
+public class QuickLookPreviewPanel: NSObject, QLPreviewPanelDataSource, QLPreviewPanelDelegate {
 
     public static let shared = QuickLookPreviewPanel()
 
-    private var currentPath: String?
+    /// 当前预览的文件路径数组
+    private var previewFiles: [String] = []
+
+    /// 当前预览的索引
+    private var currentIndex: Int = 0
+
+    /// QLPreviewPanel 单例引用
+    private var previewPanel: QLPreviewPanel? {
+        QLPreviewPanel.sharedPreviewPanel()
+    }
 
     private override init() {
         super.init()
     }
 
-    /// Show QuickLook preview for a file path
-    /// - Parameter path: File path to preview
-    public func showPreview(for path: String) {
-        currentPath = path
-        // In a full implementation, this would use QLPreviewView or similar
-        // For now, we just store the path for potential future use
-        print("QuickLook preview requested for: \(path)")
-    }
+    // MARK: - Public API
 
-    /// Toggle QuickLook preview panel visibility
-    public func togglePreview(for path: String) {
-        showPreview(for: path)
-    }
+    /// 切换 QuickLook 预览显示/隐藏
+    /// - Parameters:
+    ///   - files: 可预览的文件路径数组
+    ///   - currentIndex: 当前选中的文件索引
+    public func togglePreview(files: [String], currentIndex: Int) {
+        self.previewFiles = files
+        self.currentIndex = max(0, min(currentIndex, max(0, files.count - 1)))
 
-    /// Close the preview panel
-    public func closePreview() {
-        currentPath = nil
-    }
+        guard let panel = previewPanel else { return }
 
-    /// Get preview image for a file path
-    /// - Parameter path: File path
-    /// - Returns: NSImage or nil if not available
-    public func previewImage(for path: String) -> NSImage? {
-        // Use system icon as fallback when QLThumbnailGenerator is unavailable
-        return NSWorkspace.shared.icon(forFile: path)
-    }
-}
-
-// MARK: - QuickLook Preview Sidebar
-
-/// Sidebar view for QuickLook preview with toggle functionality
-public class QuickLookPreviewSidebar: NSView {
-
-    private var previewView: NSImageView!
-    private var placeholderLabel: NSTextField!
-    private var toggleButton: NSButton!
-
-    public var isVisible: Bool = true {
-        didSet {
-            previewView.isHidden = !isVisible
-            placeholderLabel.isHidden = !isVisible
-            toggleButton.title = isVisible ? "Hide Preview" : "Show Preview"
-        }
-    }
-    public var onToggle: ((Bool) -> Void)?
-    public var currentEntry: FileEntry? {
-        didSet {
-            updatePreview()
-        }
-    }
-
-    public override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect)
-        setupUI()
-    }
-
-    public required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupUI()
-    }
-
-    private func setupUI() {
-        // Preview image view
-        previewView = NSImageView()
-        previewView.imageScaling = .scaleProportionallyUpOrDown
-        previewView.wantsLayer = true
-        previewView.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
-        previewView.translatesAutoresizingMaskIntoConstraints = false
-
-        // Placeholder label
-        placeholderLabel = NSTextField(labelWithString: "No preview available")
-        placeholderLabel.alignment = .center
-        placeholderLabel.textColor = NSColor.secondaryLabelColor
-        placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        // Toggle button
-        toggleButton = NSButton(title: "Hide Preview", target: self, action: #selector(togglePreview))
-        toggleButton.bezelStyle = .rounded
-        toggleButton.translatesAutoresizingMaskIntoConstraints = false
-
-        addSubview(previewView)
-        addSubview(placeholderLabel)
-        addSubview(toggleButton)
-
-        NSLayoutConstraint.activate([
-            previewView.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            previewView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            previewView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            previewView.heightAnchor.constraint(equalTo: previewView.widthAnchor, multiplier: 0.75),
-
-            placeholderLabel.topAnchor.constraint(equalTo: previewView.bottomAnchor, constant: 8),
-            placeholderLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            placeholderLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-
-            toggleButton.topAnchor.constraint(equalTo: placeholderLabel.bottomAnchor, constant: 12),
-            toggleButton.centerXAnchor.constraint(equalTo: centerXAnchor),
-            toggleButton.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -8)
-        ])
-    }
-
-    @objc private func togglePreview() {
-        isVisible.toggle()
-        onToggle?(isVisible)
-    }
-
-    private func updatePreview() {
-        guard let entry = currentEntry else {
-            previewView.image = nil
-            placeholderLabel.isHidden = false
-            return
-        }
-
-        if let image = QuickLookPreviewPanel.shared.previewImage(for: entry.path) {
-            previewView.image = image
-            placeholderLabel.isHidden = true
+        if panel.isVisible {
+            panel.orderOut(nil)
         } else {
-            previewView.image = NSWorkspace.shared.icon(forFile: entry.path)
-            placeholderLabel.isHidden = false
+            panel.dataSource = self
+            panel.delegate = self
+            panel.currentPreviewItemIndex = self.currentIndex
+            panel.makeKeyAndOrderFront(nil)
         }
     }
-}
 
-// MARK: - NSImage Extension
-
-private extension NSImage {
-    convenience init?(cgImage: CGImage) {
-        let size = NSSize(width: cgImage.width, height: cgImage.height)
-        self.init(cgImage: cgImage, size: size)
+    /// 关闭 QuickLook 预览
+    public func close() {
+        previewPanel?.orderOut(nil)
     }
 
-    var cgImage: CGImage? {
-        var rect = NSRect(origin: .zero, size: self.size)
-        return self.cgImage(forProposedRect: &rect, context: nil, hints: nil)
+    /// 更新预览文件列表（不改变显示状态）
+    /// - Parameters:
+    ///   - files: 新的文件路径数组
+    ///   - currentIndex: 当前索引
+    public func updateFiles(_ files: [String], currentIndex: Int) {
+        self.previewFiles = files
+        self.currentIndex = max(0, min(currentIndex, max(0, files.count - 1)))
+        previewPanel?.reloadData()
+    }
+
+    // MARK: - QLPreviewPanelDataSource
+
+    public func numberOfPreviewItems(in panel: QLPreviewPanel!) -> Int {
+        return previewFiles.count
+    }
+
+    public func previewPanel(_ panel: QLPreviewPanel!, previewItemAt index: Int) -> QLPreviewItem! {
+        guard index >= 0 && index < previewFiles.count else { return nil }
+        let url = URL(fileURLWithPath: previewFiles[index])
+        return url as NSURL
+    }
+
+    // MARK: - QLPreviewPanelDelegate
+
+    public func previewPanel(_ panel: QLPreviewPanel!, handle event: NSEvent!) -> Bool {
+        // 处理方向键切换
+        if event.type == .keyDown {
+            switch event.keyCode {
+            case 123:  // 左箭头
+                if currentIndex > 0 {
+                    currentIndex -= 1
+                    panel.currentPreviewItemIndex = currentIndex
+                }
+                return true
+            case 124:  // 右箭头
+                if currentIndex < previewFiles.count - 1 {
+                    currentIndex += 1
+                    panel.currentPreviewItemIndex = currentIndex
+                }
+                return true
+            case 126:  // 上箭头
+                if currentIndex > 0 {
+                    currentIndex -= 1
+                    panel.currentPreviewItemIndex = currentIndex
+                }
+                return true
+            case 125:  // 下箭头
+                if currentIndex < previewFiles.count - 1 {
+                    currentIndex += 1
+                    panel.currentPreviewItemIndex = currentIndex
+                }
+                return true
+            case 53:  // Escape
+                close()
+                return true
+            default:
+                break
+            }
+        }
+        return false
+    }
+
+    public func previewPanel(_ panel: QLPreviewPanel!, modifierStateChangedTo modifierFlags: NSEvent.ModifierFlags) {
+        // 可用于实现 Cmd+方向键等快捷操作
     }
 }
