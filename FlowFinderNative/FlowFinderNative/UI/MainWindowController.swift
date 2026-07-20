@@ -327,6 +327,188 @@ extension MainWindowController: PaneToolbarDelegate {
     }
 }
 
+// MARK: - Menu Actions
+
+extension MainWindowController {
+    @objc func menuNewFolder(_ sender: Any?) {
+        activePaneViewModel.createDirectory()
+    }
+
+    @objc func menuOpen(_ sender: Any?) {
+        guard let entry = activePaneViewModel.selectedFiles.first else { return }
+        if entry.isDirectory {
+            activePaneViewModel.navigate(to: entry.path)
+        } else {
+            NSWorkspace.shared.openFile(entry.path)
+        }
+    }
+
+    @objc func menuMoveToTrash(_ sender: Any?) {
+        activePaneViewModel.deleteSelected()
+    }
+
+    @objc func menuCopy(_ sender: Any?) {
+        clipboardItems = activePaneViewModel.selectedFiles.map { $0.path }
+        clipboardOperation = .copy
+    }
+
+    @objc func menuCut(_ sender: Any?) {
+        clipboardItems = activePaneViewModel.selectedFiles.map { $0.path }
+        clipboardOperation = .cut
+    }
+
+    @objc func menuPaste(_ sender: Any?) {
+        guard !clipboardItems.isEmpty,
+              let operation = clipboardOperation else { return }
+        let destPath = activePaneViewModel.currentPath
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            for srcPath in self?.clipboardItems ?? [] {
+                let fileName = (srcPath as NSString).lastPathComponent
+                let dstPath = (destPath as NSString).appendingPathComponent(fileName)
+
+                do {
+                    switch operation {
+                    case .copy:
+                        try CoreBridge.shared.copyFile(src: srcPath, dst: dstPath)
+                    case .cut:
+                        try CoreBridge.shared.moveFile(src: srcPath, dst: dstPath)
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self?.showError(error: error)
+                    }
+                    return
+                }
+            }
+
+            DispatchQueue.main.async {
+                self?.activePaneViewModel.refresh()
+            }
+        }
+    }
+
+    @objc func menuSelectAll(_ sender: Any?) {
+        activePaneViewModel.selectAll()
+    }
+
+    @objc func menuRename(_ sender: Any?) {
+        guard let entry = activePaneViewModel.selectedFiles.first else { return }
+        let alert = NSAlert()
+        alert.messageText = "重命名 \"\(entry.name)\""
+        alert.informativeText = "输入新名称："
+        alert.addButton(withTitle: "重命名")
+        alert.addButton(withTitle: "取消")
+        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
+        textField.stringValue = entry.name
+        alert.accessoryView = textField
+        if let window = window {
+            alert.beginSheetModal(for: window) { [weak self] response in
+                guard response == .alertFirstButtonReturn else { return }
+                let newName = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !newName.isEmpty, newName != entry.name else { return }
+                self?.activePaneViewModel.renameFile(entry.path, to: newName)
+            }
+        }
+    }
+
+    @objc func menuListView(_ sender: Any?) {
+        activePaneViewModel.setViewMode(.list)
+    }
+
+    @objc func menuGridView(_ sender: Any?) {
+        activePaneViewModel.setViewMode(.grid)
+    }
+
+    @objc func menuToggleHiddenFiles(_ sender: Any?) {
+        // Phase 4 实现
+    }
+
+    @objc func menuRefresh(_ sender: Any?) {
+        activePaneViewModel.refresh()
+    }
+
+    @objc func menuGoBack(_ sender: Any?) {
+        _ = activePaneViewModel.goBack()
+    }
+
+    @objc func menuGoForward(_ sender: Any?) {
+        _ = activePaneViewModel.goForward()
+    }
+
+    @objc func menuGoUp(_ sender: Any?) {
+        activePaneViewModel.goUp()
+    }
+
+    @objc func menuGoDesktop(_ sender: Any?) {
+        let path = (FileManager.default.homeDirectoryForCurrentUser.path as NSString).appendingPathComponent("Desktop")
+        activePaneViewModel.navigate(to: path)
+    }
+
+    @objc func menuGoDocuments(_ sender: Any?) {
+        let path = (FileManager.default.homeDirectoryForCurrentUser.path as NSString).appendingPathComponent("Documents")
+        activePaneViewModel.navigate(to: path)
+    }
+
+    @objc func menuGoDownloads(_ sender: Any?) {
+        let path = (FileManager.default.homeDirectoryForCurrentUser.path as NSString).appendingPathComponent("Downloads")
+        activePaneViewModel.navigate(to: path)
+    }
+
+    @objc func menuGoHome(_ sender: Any?) {
+        activePaneViewModel.navigate(to: FileManager.default.homeDirectoryForCurrentUser.path)
+    }
+
+    @objc func menuConnectServer(_ sender: Any?) {
+        let alert = NSAlert()
+        alert.messageText = "连接服务器"
+        alert.informativeText = "输入服务器地址（如 smb://server/share）："
+        alert.addButton(withTitle: "连接")
+        alert.addButton(withTitle: "取消")
+        let textField = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
+        textField.placeholderString = "smb://server/share"
+        alert.accessoryView = textField
+        if let window = window {
+            alert.beginSheetModal(for: window) { response in
+                guard response == .alertFirstButtonReturn else { return }
+                let url = textField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !url.isEmpty else { return }
+                SMBBridge.shared.mount(url: url) { result in
+                    switch result {
+                    case .success:
+                        print("SMB 挂载成功")
+                    case .failure(let error):
+                        print("SMB 挂载失败: \(error)")
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Helpers
+
+    private var activePaneViewModel: PaneViewModel {
+        activePane == .left ? leftPaneViewModel : rightPaneViewModel
+    }
+
+    private var clipboardItems: [String] = []
+    private var clipboardOperation: ClipboardOperation?
+
+    private enum ClipboardOperation {
+        case copy
+        case cut
+    }
+
+    private func showError(error: Error) {
+        let alert = NSAlert()
+        alert.messageText = "错误"
+        alert.informativeText = error.localizedDescription
+        alert.alertStyle = .critical
+        alert.addButton(withTitle: "好")
+        if let window = window { alert.beginSheetModal(for: window) { _ in } }
+    }
+}
+
 // MARK: - PaneSide
 
 enum PaneSide {
