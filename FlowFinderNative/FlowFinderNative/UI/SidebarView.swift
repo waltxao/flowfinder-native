@@ -185,16 +185,65 @@ private class SidebarDataSource: NSObject, NSOutlineViewDataSource, NSOutlineVie
 
     func loadDevices() {
         let volumes = CoreBridge.shared.listVolumes()
-        devices = volumes.map { vol in
-            let isNetwork = vol.fsType.lowercased().contains("smb") || vol.fsType.lowercased().contains("nfs") || vol.fsType.lowercased().contains("afp")
-            return DeviceItem(
-                name: vol.name,
+        devices = []
+
+        // 1. 始终添加主硬盘（根目录 /），即使 Rust 端过滤了它
+        // volumeNameKey 可能返回电脑名而非卷名，使用 volumeLocalizedNameKey 并提供回退
+        let homePath = FileManager.default.homeDirectoryForCurrentUser.path
+        let rootURL = URL(fileURLWithPath: "/")
+        var rootName = "Macintosh HD"
+        if let name = try? rootURL.resourceValues(forKeys: [.volumeLocalizedNameKey]).volumeLocalizedName,
+           !name.isEmpty, name != Host.current().localizedName {
+            rootName = name
+        }
+        devices.append(DeviceItem(
+            name: rootName,
+            path: "/",
+            isRemovable: false,
+            isNetwork: false,
+            totalSize: 0,
+            freeSize: 0
+        ))
+
+        // 2. 添加用户主目录（作为快捷设备入口）
+        let homeName = homePath.components(separatedBy: "/").last ?? "Home"
+        devices.append(DeviceItem(
+            name: homeName,
+            path: homePath,
+            isRemovable: false,
+            isNetwork: false,
+            totalSize: 0,
+            freeSize: 0
+        ))
+
+        // 3. 过滤并添加外部/网络卷
+        for vol in volumes {
+            // 只保留 /Volumes/ 下的挂载卷（U盘、外接硬盘、网络驱动器等）
+            guard vol.path.hasPrefix("/Volumes/") else { continue }
+
+            // 过滤系统隐藏卷（VM、Preboot、Update 等）
+            let volName = vol.name
+            let systemNames: Set<String> = [
+                "VM", "Preboot", "Update", "xarts", "iSCPreboot",
+                "Hardware", "Recovery", "SSV", "Data"
+            ]
+            if systemNames.contains(volName) { continue }
+
+            // 过滤 UUID 命名的快照卷
+            if volName.count == 36 && volName.contains("-") { continue }
+
+            let isNetwork = vol.fsType.lowercased().contains("smb")
+                || vol.fsType.lowercased().contains("nfs")
+                || vol.fsType.lowercased().contains("afp")
+
+            devices.append(DeviceItem(
+                name: volName,
                 path: vol.path,
                 isRemovable: vol.isRemovable,
                 isNetwork: isNetwork,
                 totalSize: vol.totalSize,
                 freeSize: vol.freeSize
-            )
+            ))
         }
     }
 
@@ -317,7 +366,16 @@ private class SidebarDataSource: NSObject, NSOutlineViewDataSource, NSOutlineVie
 
         case .device(let dev):
             textField.stringValue = dev.name
-            let iconName = dev.isNetwork ? "externaldrive.connected.to.line" : "externaldrive"
+            let iconName: String
+            if dev.path == "/" {
+                iconName = "internaldrive"
+            } else if dev.path == FileManager.default.homeDirectoryForCurrentUser.path {
+                iconName = "house"
+            } else if dev.isNetwork {
+                iconName = "externaldrive.connected.to.line"
+            } else {
+                iconName = "externaldrive"
+            }
             imageView.image = NSImage(systemSymbolName: iconName, accessibilityDescription: "设备")
                 ?? NSImage(systemSymbolName: "externaldrive", accessibilityDescription: nil)
 
