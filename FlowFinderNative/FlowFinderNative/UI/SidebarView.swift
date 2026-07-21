@@ -35,6 +35,10 @@ class SidebarView: NSView {
         scrollView.hasHorizontalScroller = false
         scrollView.autohidesScrollers = true
         scrollView.drawsBackground = false
+        scrollView.backgroundColor = .clear
+        // NSClipView 默认绘制 controlBackgroundColor（浅灰），必须显式清除
+        scrollView.contentView.drawsBackground = false
+        scrollView.contentView.backgroundColor = .clear
 
         outlineView = NSOutlineView()
         outlineView.allowsMultipleSelection = false

@@ -31,7 +31,7 @@ public class TaskProgressBar: NSView {
 
     private func setupUI() {
         wantsLayer = true
-        layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+        layer?.backgroundColor = NSColor.clear.cgColor
 
         // 容器视图
         containerView = NSView()

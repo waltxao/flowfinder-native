@@ -30,7 +30,8 @@ class DetailsBar: NSView {
 
     private func setupUI() {
         wantsLayer = true
-        layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+        layer?.backgroundColor = NSColor.clear.cgColor
+        wantsLayer = true
         layer?.borderColor = NSColor.separatorColor.cgColor
         layer?.borderWidth = 1
 

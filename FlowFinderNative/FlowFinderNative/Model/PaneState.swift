@@ -232,10 +232,11 @@ public class PaneViewModel: ObservableObject {
             guard let self = self else { return }
             do {
                 let entries = try CoreBridge.shared.listDirectory(path: self.state.path)
+                // 在后台线程完成排序，避免阻塞 UI
+                let sortedEntries = self.sortEntries(entries)
                 DispatchQueue.main.async {
-                    self.state.files = entries
+                    self.state.files = sortedEntries
                     self.state.isLoading = false
-                    self.applySort()
                 }
             } catch {
                 DispatchQueue.main.async {
@@ -246,11 +247,11 @@ public class PaneViewModel: ObservableObject {
         }
     }
 
-    private func applySort() {
+    /// 在后台线程排序（不触发 @Published 变更）
+    private func sortEntries(_ entries: [FileEntry]) -> [FileEntry] {
         let field = state.sortField
         let ascending = state.sortAscending
-
-        state.files.sort { a, b in
+        return entries.sorted { a, b in
             let comparison: Bool
             switch field {
             case .name:
@@ -263,6 +264,14 @@ public class PaneViewModel: ObservableObject {
                 comparison = a.size < b.size
             }
             return ascending ? comparison : !comparison
+        }
+    }
+
+    private func applySort() {
+        let sorted = sortEntries(state.files)
+        // 仅在顺序实际变化时才更新（减少不必要的 reloadData）
+        if sorted.map(\.path) != state.files.map(\.path) {
+            state.files = sorted
         }
     }
 

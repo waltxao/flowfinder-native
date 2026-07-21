@@ -124,11 +124,19 @@ public class FileGridView: NSView {
     }
 
     private func setupUI() {
+        // 透明背景以透出 NSVisualEffectView 玻璃态
+        wantsLayer = true
+        layer?.backgroundColor = NSColor.clear.cgColor
+
         scrollView = NSScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         scrollView.autohidesScrollers = true
+        scrollView.drawsBackground = false
+        scrollView.backgroundColor = .clear
+        scrollView.contentView.drawsBackground = false
+        scrollView.contentView.backgroundColor = .clear
 
         let layout = NSCollectionViewGridLayout()
         layout.minimumItemSize = NSSize(width: 120, height: 120)

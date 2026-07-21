@@ -50,6 +50,7 @@ class PaneToolbar: NSView {
 
     private func setupUI() {
         wantsLayer = true
+        layer?.backgroundColor = NSColor.clear.cgColor
         layer?.masksToBounds = true
 
         // 固定双行高度 72pt（每行 32 + 间距 4 + 边距 4）
@@ -81,6 +82,9 @@ class PaneToolbar: NSView {
         breadcrumbScrollView.hasVerticalScroller = false
         breadcrumbScrollView.autohidesScrollers = true
         breadcrumbScrollView.drawsBackground = false
+        breadcrumbScrollView.backgroundColor = .clear
+        breadcrumbScrollView.contentView.drawsBackground = false
+        breadcrumbScrollView.contentView.backgroundColor = .clear
         breadcrumbScrollView.documentView = breadcrumbStack
 
         let row1 = NSStackView(views: [backButton, forwardButton, upButton, refreshButton, breadcrumbScrollView])

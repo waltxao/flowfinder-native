@@ -8,6 +8,7 @@ public class FileListView: NSView {
     private var tableView: NSTableView!
     private var scrollView: NSScrollView!
     private var cancellables = Set<AnyCancellable>()
+    private var lastFilesCount: Int = -1
 
     public var viewModel: PaneViewModel? {
         didSet {
@@ -17,7 +18,14 @@ public class FileListView: NSView {
             tableView.delegate = self
             viewModel?.$state
                 .receive(on: DispatchQueue.main)
-                .sink { [weak self] _ in self?.reloadData() }
+                .sink { [weak self] state in
+                    // 仅在 files 数量变化时才 reloadData（避免 isLoading/error 等变化触发不必要的刷新）
+                    guard let self = self else { return }
+                    if self.lastFilesCount != state.files.count {
+                        self.lastFilesCount = state.files.count
+                        self.reloadData()
+                    }
+                }
                 .store(in: &cancellables)
             reloadData()
         }
@@ -57,6 +65,10 @@ public class FileListView: NSView {
     // MARK: - UI Setup
 
     private func setupUI() {
+        // 透明背景以透出 NSVisualEffectView 玻璃态
+        wantsLayer = true
+        layer?.backgroundColor = NSColor.clear.cgColor
+
         scrollView = NSScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.hasVerticalScroller = true
@@ -73,8 +85,12 @@ public class FileListView: NSView {
         tableView.usesAlternatingRowBackgroundColors = false
         tableView.rowHeight = 24
         tableView.backgroundColor = NSColor.clear
-        scrollView.drawsBackground = true
-        scrollView.backgroundColor = NSColor.textBackgroundColor
+        tableView.enclosingScrollView?.drawsBackground = false
+        scrollView.drawsBackground = false
+        scrollView.backgroundColor = NSColor.clear
+        // NSClipView 默认绘制 controlBackgroundColor（浅灰），必须显式清除
+        scrollView.contentView.drawsBackground = false
+        scrollView.contentView.backgroundColor = .clear
         tableView.dataSource = self
         tableView.delegate = self
 
@@ -446,12 +462,43 @@ extension FileListView: NSTableViewDelegate {
 
     public func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
         guard let viewModel = viewModel, row < viewModel.files.count else { return false }
-        let entry = viewModel.files[row]
-        let multi = NSEvent.modifierFlags.contains(.command)
-        let shift = NSEvent.modifierFlags.contains(.shift)
-        viewModel.selectFile(entry, multi: multi, shiftKey: shift)
-        onSelectionChanged?(viewModel.selectedFiles)
+        // 仅返回是否可选中，不做选择逻辑——在 selectionDidChange 中处理
         return true
+    }
+
+    // 选择变更时才执行选择逻辑（单击选中、Cmd+点击多选、Shift+范围选）
+    public func tableViewSelectionDidChange(_ notification: Notification) {
+        guard let viewModel = viewModel else { return }
+        let selectedRows = tableView.selectedRowIndexes
+        let entries = selectedRows.compactMap { idx -> FileEntry? in
+            guard idx >= 0, idx < viewModel.files.count else { return nil }
+            return viewModel.files[idx]
+        }
+        // 同步更新 viewModel 的选择状态
+        viewModel.state.selectedFiles = entries
+        // 异步触发回调，避免阻塞双击事件
+        DispatchQueue.main.async { [weak self] in
+            self?.onSelectionChanged?(entries)
+        }
+    }
+}
+
+// MARK: - Keyboard Events
+
+extension FileListView {
+    /// 重写 keyDown，空格键触发 QuickLook 预览
+    public override func keyDown(with event: NSEvent) {
+        let modifiers = event.modifierFlags
+
+        // Space: QuickLook 预览
+        if event.keyCode == 49 && modifiers.isEmpty {
+            // 发送通知让 MainWindowController 处理
+            NotificationCenter.default.post(name: .fileListRequestQuickLook, object: nil, userInfo: ["side": getSide()])
+            return
+        }
+
+        // 其他键传给 nextResponder（沿响应链传递到 MainWindowController）
+        super.keyDown(with: event)
     }
 }
 
@@ -562,4 +609,5 @@ extension Notification.Name {
     static let fileListDidCopyToOther = Notification.Name("fileListDidCopyToOther")
     static let fileListDidMoveToOther = Notification.Name("fileListDidMoveToOther")
     static let fileListDidOpenInOther = Notification.Name("fileListDidOpenInOther")
+    static let fileListRequestQuickLook = Notification.Name("fileListRequestQuickLook")
 }

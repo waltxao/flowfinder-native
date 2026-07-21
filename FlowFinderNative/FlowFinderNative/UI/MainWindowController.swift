@@ -21,7 +21,8 @@ public class MainWindowController: NSWindowController {
     private var taskProgressBar: TaskProgressBar!
     private var mainSplitView: NSSplitView!
     private var paneSplitView: NSSplitView!
-    private var vibrancyView: NSVisualEffectView!
+    /// macOS 26+: NSGlassEffectView（液态玻璃）；旧版 macOS 回退到 NSVisualEffectView
+    private var glassEffectView: NSView!
 
     private var leftPaneToolbar: PaneToolbar!
     private var rightPaneToolbar: PaneToolbar!
@@ -51,7 +52,10 @@ public class MainWindowController: NSWindowController {
         window.title = "FlowFinder"
         window.minSize = NSSize(width: 1000, height: 700)
         window.center()
-        window.makeKeyAndOrderFront(nil)
+        // 注意：不要在这里 makeKeyAndOrderFront！
+        // 必须先完成 setupUI（设置 isOpaque=false, backgroundColor=.clear, NSVisualEffectView），
+        // 然后再显示窗口，否则窗口会以不透明状态先渲染一次
+        // window.makeKeyAndOrderFront(nil)
         // 不使用 autosave，避免加载之前保存的小窗口尺寸
         // window.setFrameAutosaveName("MainWindow")
         // window.isRestorable = true
@@ -65,6 +69,9 @@ public class MainWindowController: NSWindowController {
         setupBindings()
         setupNotifications()
         loadInitialDirectories()
+
+        // setupUI 完成后再显示窗口（此时透明设置已就绪）
+        window.makeKeyAndOrderFront(nil)
     }
 
     required init?(coder: NSCoder) {
@@ -76,14 +83,11 @@ public class MainWindowController: NSWindowController {
     private func setupUI() {
         guard let window = window else { return }
 
-        // 全窗口 NSVisualEffectView 作为背景（Finder 风格）
-        vibrancyView = NSVisualEffectView()
-        vibrancyView.translatesAutoresizingMaskIntoConstraints = false
-        vibrancyView.material = .windowBackground
-        vibrancyView.blendingMode = .behindWindow
-        vibrancyView.state = .active
-        vibrancyView.wantsLayer = true
-        window.contentView = vibrancyView
+        // 窗口必须透明，否则玻璃效果无法模糊窗口背后的内容
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        window.hasShadow = true
+        window.titlebarAppearsTransparent = true
 
         // Sidebar
         sidebarView = SidebarView()
@@ -100,6 +104,8 @@ public class MainWindowController: NSWindowController {
         paneSplitView.dividerStyle = .thin
         paneSplitView.translatesAutoresizingMaskIntoConstraints = false
         paneSplitView.delegate = self
+        paneSplitView.wantsLayer = true
+        paneSplitView.layer?.backgroundColor = NSColor.clear.cgColor
         paneSplitView.addArrangedSubview(leftPaneContainer)
         paneSplitView.addArrangedSubview(rightPaneContainer)
 
@@ -109,6 +115,8 @@ public class MainWindowController: NSWindowController {
         mainSplitView.dividerStyle = .thin
         mainSplitView.translatesAutoresizingMaskIntoConstraints = false
         mainSplitView.delegate = self
+        mainSplitView.wantsLayer = true
+        mainSplitView.layer?.backgroundColor = NSColor.clear.cgColor
         mainSplitView.addArrangedSubview(sidebarView)
         mainSplitView.addArrangedSubview(paneSplitView)
 
@@ -116,19 +124,14 @@ public class MainWindowController: NSWindowController {
         taskProgressBar = TaskProgressBar()
         taskProgressBar.translatesAutoresizingMaskIntoConstraints = false
 
-        // Main container
+        // Main container（透明背景以透出玻璃效果）
         let mainContainer = NSView()
         mainContainer.translatesAutoresizingMaskIntoConstraints = false
+        mainContainer.wantsLayer = true
+        mainContainer.layer?.backgroundColor = NSColor.clear.cgColor
         mainContainer.addSubview(mainSplitView)
         mainContainer.addSubview(taskProgressBar)
-        vibrancyView.addSubview(mainContainer)
-
         NSLayoutConstraint.activate([
-            mainContainer.topAnchor.constraint(equalTo: vibrancyView.topAnchor),
-            mainContainer.leadingAnchor.constraint(equalTo: vibrancyView.leadingAnchor),
-            mainContainer.trailingAnchor.constraint(equalTo: vibrancyView.trailingAnchor),
-            mainContainer.bottomAnchor.constraint(equalTo: vibrancyView.bottomAnchor),
-
             mainSplitView.topAnchor.constraint(equalTo: mainContainer.topAnchor),
             mainSplitView.leadingAnchor.constraint(equalTo: mainContainer.leadingAnchor),
             mainSplitView.trailingAnchor.constraint(equalTo: mainContainer.trailingAnchor),
@@ -139,6 +142,20 @@ public class MainWindowController: NSWindowController {
             taskProgressBar.bottomAnchor.constraint(equalTo: mainContainer.bottomAnchor),
             taskProgressBar.heightAnchor.constraint(equalToConstant: TaskProgressBar.height),
         ])
+
+        // macOS 26+: NSGlassEffectView 作为窗口 contentView
+        // .clear 样式获得透明玻璃效果，contentView 嵌入实际内容
+        // 窗口透明（isOpaque=false, backgroundColor=.clear）让玻璃模糊桌面壁纸
+        // 注意：需要系统设置 NSGlassDiffusionSetting=true（macOS 27 液态玻璃开关）
+        let glassView = NSGlassEffectView()
+        glassView.style = .clear
+        glassView.cornerRadius = 0
+        if #available(macOS 27.0, *) {
+            glassView.effectIsInteractive = true
+        }
+        glassView.contentView = mainContainer
+        glassEffectView = glassView
+        window.contentView = glassView
 
         // Holding priorities
         mainSplitView.setHoldingPriority(.defaultLow, forSubviewAt: 0)
@@ -166,6 +183,7 @@ public class MainWindowController: NSWindowController {
         let container = NSView()
         container.translatesAutoresizingMaskIntoConstraints = false
         container.wantsLayer = true
+        container.layer?.backgroundColor = NSColor.clear.cgColor
         container.layer?.cornerRadius = 8
         container.layer?.masksToBounds = true
 
@@ -303,6 +321,20 @@ public class MainWindowController: NSWindowController {
             self, selector: #selector(handleFileListOpenInOther(_:)),
             name: .fileListDidOpenInOther, object: nil
         )
+        // 订阅 QuickLook 请求
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleQuickLookRequest(_:)),
+            name: .fileListRequestQuickLook, object: nil
+        )
+    }
+
+    @objc private func handleQuickLookRequest(_ notification: Notification) {
+        // 切换到请求的面板
+        if let side = notification.userInfo?["side"] as? String {
+            if side == "left" { activePane = .left } else { activePane = .right }
+        }
+        // 调用已有的 QuickLook 逻辑
+        handleQuickLook()
     }
 
     // MARK: - Keyboard Events
