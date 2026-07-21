@@ -160,6 +160,13 @@ fi
 
 chmod +x "$OUTPUT_DIR/$DYLIB_NAME"
 
+# Fix install_name for portability — use @rpath so the dylib can be embedded in .app/Frameworks/
+if command -v install_name_tool &> /dev/null; then
+    log_info "Fixing dylib install_name to @rpath..."
+    install_name_tool -id @rpath/libflowfinder_core.dylib "$OUTPUT_DIR/$DYLIB_NAME"
+    log_success "install_name set to @rpath/libflowfinder_core.dylib"
+fi
+
 if command -v codesign &> /dev/null; then
     log_info "Codesigning library..."
     if codesign --sign - --force "$OUTPUT_DIR/$DYLIB_NAME" 2>/dev/null; then

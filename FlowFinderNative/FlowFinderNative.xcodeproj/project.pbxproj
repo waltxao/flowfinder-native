@@ -285,7 +285,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\n# Copy the Rust dylib into the app bundle\nDYLIB_SRC=\"${SRCROOT}/FlowFinderNative/Libraries/libflowfinder_core.dylib\"\nDYLIB_DST=\"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_FOLDER_PATH}/libflowfinder_core.dylib\"\n\nif [ -f \"${DYLIB_SRC}\" ]; then\n    cp \"${DYLIB_SRC}\" \"${DYLIB_DST}\"\n    chmod +x \"${DYLIB_DST}\"\n    echo \"Copied dylib to bundle: ${DYLIB_DST}\"\nelse\n    echo \"Warning: Rust dylib not found at ${DYLIB_SRC}\"\nfi\n";
+			shellScript = "set -e\n\n# Copy the Rust dylib into the app bundle's Frameworks directory\nDYLIB_SRC=\"${SRCROOT}/FlowFinderNative/Libraries/libflowfinder_core.dylib\"\nFRAMEWORKS_DIR=\"${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Contents/Frameworks\"\nDYLIB_DST=\"${FRAMEWORKS_DIR}/libflowfinder_core.dylib\"\n\nmkdir -p \"${FRAMEWORKS_DIR}\"\n\nif [ -f \"${DYLIB_SRC}\" ]; then\n    cp \"${DYLIB_SRC}\" \"${DYLIB_DST}\"\n    chmod +x \"${DYLIB_DST}\"\n    # Ensure install_name is @rpath (in case build-rust.sh didn't run)\n    install_name_tool -id @rpath/libflowfinder_core.dylib \"${DYLIB_DST}\" 2>/dev/null || true\n    echo \"Copied dylib to Frameworks: ${DYLIB_DST}\"\nelse\n    echo \"Warning: Rust dylib not found at ${DYLIB_SRC}\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

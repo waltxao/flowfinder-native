@@ -90,7 +90,7 @@ class DetailsBar: NSView {
             leftColumn.topAnchor.constraint(equalTo: detailsContainer.topAnchor),
             leftColumn.leadingAnchor.constraint(equalTo: detailsContainer.leadingAnchor),
             leftColumn.bottomAnchor.constraint(equalTo: detailsContainer.bottomAnchor),
-            leftColumn.widthAnchor.constraint(equalTo: detailsContainer.widthAnchor, multiplier: 0.5),
+            leftColumn.widthAnchor.constraint(lessThanOrEqualTo: detailsContainer.widthAnchor, multiplier: 0.55),
 
             rightColumn.topAnchor.constraint(equalTo: detailsContainer.topAnchor),
             rightColumn.leadingAnchor.constraint(equalTo: leftColumn.trailingAnchor, constant: 12),
@@ -137,8 +137,8 @@ class DetailsBar: NSView {
         row.alignment = .centerY
         row.translatesAutoresizingMaskIntoConstraints = false
 
-        // 固定 label 宽度对齐
-        labelView.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        // 固定 label 宽度对齐（加宽以适应中文标签）
+        labelView.widthAnchor.constraint(equalToConstant: 52).isActive = true
 
         return (row, valueView)
     }

@@ -70,8 +70,11 @@ public class FileListView: NSView {
         tableView.allowsColumnResizing = true
         // 使用 firstColumnOnlyAutoresizingStyle：名称列自动填充剩余空间，其他列保持固定宽度
         tableView.columnAutoresizingStyle = .firstColumnOnlyAutoresizingStyle
-        tableView.usesAlternatingRowBackgroundColors = true
+        tableView.usesAlternatingRowBackgroundColors = false
         tableView.rowHeight = 24
+        tableView.backgroundColor = NSColor.clear
+        scrollView.drawsBackground = true
+        scrollView.backgroundColor = NSColor.textBackgroundColor
         tableView.dataSource = self
         tableView.delegate = self
 
