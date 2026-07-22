@@ -14,6 +14,10 @@ class SidebarView: NSView {
     private var deviceOutlineView: NSOutlineView!
     private var mainScrollView: NSScrollView!
     private var deviceScrollView: NSScrollView!
+    /// 上方区域圆角遮罩（包裹收藏夹 + 标签）
+    private var mainMaskView: GlassSectionMaskView!
+    /// 下方区域圆角遮罩（包裹存储设备）
+    private var deviceMaskView: GlassSectionMaskView!
     private let mainDataSource = MainSidebarDataSource()
     private let deviceDataSource = DeviceSidebarDataSource()
     private var deviceHeightConstraint: NSLayoutConstraint!
@@ -33,6 +37,16 @@ class SidebarView: NSView {
         wantsLayer = true
         layer?.backgroundColor = NSColor.clear.cgColor
 
+        // 圆角遮罩区域：上方（收藏夹 + 标签）
+        mainMaskView = GlassSectionMaskView()
+        mainMaskView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(mainMaskView)
+
+        // 圆角遮罩区域：下方（存储设备）
+        deviceMaskView = GlassSectionMaskView()
+        deviceMaskView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(deviceMaskView)
+
         // 上方：收藏夹 + 标签
         mainScrollView = makeScrollView()
         mainOutlineView = makeOutlineView()
@@ -44,7 +58,8 @@ class SidebarView: NSView {
         contextMenu.items.forEach { $0.target = self }
         mainOutlineView.menu = contextMenu
         mainScrollView.documentView = mainOutlineView
-        addSubview(mainScrollView)
+        // 放入遮罩容器，由 mask 提供圆角半透明背景
+        mainMaskView.addSubview(mainScrollView)
 
         // 下方：存储设备（独立区域，固定底部）
         deviceScrollView = makeScrollView()
@@ -52,24 +67,40 @@ class SidebarView: NSView {
         deviceOutlineView.dataSource = deviceDataSource
         deviceOutlineView.delegate = deviceDataSource
         deviceScrollView.documentView = deviceOutlineView
-        addSubview(deviceScrollView)
+        // 放入遮罩容器
+        deviceMaskView.addSubview(deviceScrollView)
 
         // 设备区高度根据设备数量动态调整（保留最小高度）
-        deviceHeightConstraint = deviceScrollView.heightAnchor.constraint(equalToConstant: 48)
+        // 高度约束作用于设备遮罩容器，scrollView 填满遮罩
+        deviceHeightConstraint = deviceMaskView.heightAnchor.constraint(equalToConstant: 48)
         deviceHeightConstraint.priority = .required
 
-        NSLayoutConstraint.activate([
-            // 主列表填充顶部剩余空间
-            mainScrollView.topAnchor.constraint(equalTo: topAnchor),
-            mainScrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            mainScrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            mainScrollView.bottomAnchor.constraint(equalTo: deviceScrollView.topAnchor),
+        let padding: CGFloat = 8
 
-            // 设备列表固定底部
-            deviceScrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            deviceScrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            deviceScrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
+        NSLayoutConstraint.activate([
+            // 主遮罩区域填充顶部剩余空间
+            mainMaskView.topAnchor.constraint(equalTo: topAnchor, constant: padding),
+            mainMaskView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: padding),
+            mainMaskView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -padding),
+            mainMaskView.bottomAnchor.constraint(equalTo: deviceMaskView.topAnchor, constant: -padding),
+
+            // 设备遮罩区域固定底部
+            deviceMaskView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: padding),
+            deviceMaskView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -padding),
+            deviceMaskView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -padding),
             deviceHeightConstraint,
+
+            // 主 scrollView 填满主遮罩（圆角由 mask 的 masksToBounds 裁剪）
+            mainScrollView.topAnchor.constraint(equalTo: mainMaskView.topAnchor),
+            mainScrollView.leadingAnchor.constraint(equalTo: mainMaskView.leadingAnchor),
+            mainScrollView.trailingAnchor.constraint(equalTo: mainMaskView.trailingAnchor),
+            mainScrollView.bottomAnchor.constraint(equalTo: mainMaskView.bottomAnchor),
+
+            // 设备 scrollView 填满设备遮罩
+            deviceScrollView.topAnchor.constraint(equalTo: deviceMaskView.topAnchor),
+            deviceScrollView.leadingAnchor.constraint(equalTo: deviceMaskView.leadingAnchor),
+            deviceScrollView.trailingAnchor.constraint(equalTo: deviceMaskView.trailingAnchor),
+            deviceScrollView.bottomAnchor.constraint(equalTo: deviceMaskView.bottomAnchor),
         ])
 
         // 监听卷挂载/卸载通知

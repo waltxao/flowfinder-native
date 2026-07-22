@@ -43,6 +43,7 @@
 		FF0000000000000000200031 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000200032; };
 		FF0000000000000000200033 /* TaskPanelWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000200034; };
 		FF0000000000000000200035 /* TaskProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000200036; };
+		FF0000000000000000200037 /* GlassSectionMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000200038; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -84,6 +85,7 @@
 		FF0000000000000000200032 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		FF0000000000000000200034 /* TaskPanelWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskPanelWindowController.swift; sourceTree = "<group>"; };
 		FF0000000000000000200036 /* TaskProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskProgressBar.swift; sourceTree = "<group>"; };
+		FF0000000000000000200038 /* GlassSectionMaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassSectionMaskView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +133,7 @@
 			children = (
 				FF0000140000000000000014 /* FileListView.swift */,
 				FF0000150000000000000015 /* SidebarView.swift */,
+				FF0000000000000000200038 /* GlassSectionMaskView.swift */,
 				FF0000160000000000000016 /* MainWindowController.swift */,
 							FF000000000000000020001C /* AppearanceSettingsView.swift */,
 				FF000000000000000020001E /* DetailsBar.swift */,
@@ -328,6 +331,7 @@
 				FF0000000000000000200031 /* SettingsWindowController.swift in Sources */,
 				FF0000000000000000200033 /* TaskPanelWindowController.swift in Sources */,
 				FF0000000000000000200035 /* TaskProgressBar.swift in Sources */,
+				FF0000000000000000200037 /* GlassSectionMaskView.swift in Sources */,
 );
 			runOnlyForDeploymentPostprocessing = 0;
 		};
