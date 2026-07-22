@@ -191,9 +191,10 @@ class SidebarView: NSView {
     }
 
     private func updateDeviceHeight() {
-        // section 标题行 + 设备行
-        let rows = 1 + deviceDataSource.deviceCount
-        let height = CGFloat(rows) * deviceOutlineView.rowHeight
+        // section 标题行（24pt） + 设备行（52pt：图标行20 + 进度条行8 + 文字行12 + 间距8 + padding4）
+        let sectionHeight: CGFloat = 24
+        let deviceRowHeight: CGFloat = 52
+        let height = sectionHeight + CGFloat(deviceDataSource.deviceCount) * deviceRowHeight
         deviceHeightConstraint.constant = max(height, 48)
     }
 }
@@ -220,9 +221,24 @@ private class SidebarDataSourceBase: NSObject, NSOutlineViewDataSource, NSOutlin
             ?? NSTableCellView()
         cell.identifier = cellID
 
-        // 清除旧子视图
+        // 清除旧子视图与引用
         cell.subviews.forEach { $0.removeFromSuperview() }
+        cell.imageView = nil
+        cell.textField = nil
 
+        // 标签：药丸样式（自定义布局）
+        if case .tag(let tag) = item as? SidebarItem {
+            configureTagPill(cell: cell, tag: tag)
+            return cell
+        }
+
+        // 设备：进度条 + 可用空间（自定义布局）
+        if case .device(let dev) = item as? SidebarItem {
+            configureDeviceCell(cell: cell, dev: dev)
+            return cell
+        }
+
+        // 默认布局：图标 + 文字（区域标题 / 收藏夹）
         let textField = NSTextField(labelWithString: "")
         textField.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
         textField.textColor = NSColor.labelColor
@@ -264,34 +280,160 @@ private class SidebarDataSourceBase: NSObject, NSOutlineViewDataSource, NSOutlin
                 ?? NSImage(named: NSImage.folderName)
             imageView.contentTintColor = NSColor.systemYellow
 
-        case .tag(let tag):
-            textField.stringValue = tag.name
-            imageView.image = NSImage(systemSymbolName: "tag.fill", accessibilityDescription: "标签")
-            // 使用 tag 颜色
-            if let color = NSColor(hex: tag.color) {
-                imageView.contentTintColor = color
-            }
-
-        case .device(let dev):
-            textField.stringValue = dev.name
-            let iconName: String
-            if dev.path == "/" {
-                iconName = "internaldrive"
-            } else if dev.path == FileManager.default.homeDirectoryForCurrentUser.path {
-                iconName = "house"
-            } else if dev.isNetwork {
-                iconName = "externaldrive.connected.to.line"
-            } else {
-                iconName = "externaldrive"
-            }
-            imageView.image = NSImage(systemSymbolName: iconName, accessibilityDescription: "设备")
-                ?? NSImage(systemSymbolName: "externaldrive", accessibilityDescription: nil)
-
         default:
             textField.stringValue = ""
         }
 
         return cell
+    }
+
+    // MARK: - Row Height
+
+    func outlineView(_ outlineView: NSOutlineView, heightOfRowByItem item: Any) -> CGFloat {
+        // 设备行使用更高的高度以容纳「图标 + 进度条 + 可用空间」三行
+        if case .device = item as? SidebarItem {
+            return 52
+        }
+        return 24
+    }
+
+    // MARK: - Tag Pill (药丸样式)
+
+    private func configureTagPill(cell: NSTableCellView, tag: Tag) {
+        let pillHeight: CGFloat = 20
+
+        let pill = NSView()
+        pill.wantsLayer = true
+        pill.layer?.backgroundColor = NSColor.controlBackgroundColor.withAlphaComponent(0.6).cgColor
+        pill.layer?.cornerRadius = pillHeight / 2  // ≈10pt
+        pill.translatesAutoresizingMaskIntoConstraints = false
+        cell.addSubview(pill)
+
+        // 左侧彩色小圆点（8x8，cornerRadius = 4）
+        let dot = NSView()
+        dot.wantsLayer = true
+        dot.layer?.backgroundColor = (NSColor(hex: tag.color) ?? .systemBlue).cgColor
+        dot.layer?.cornerRadius = 4
+        dot.translatesAutoresizingMaskIntoConstraints = false
+        pill.addSubview(dot)
+
+        // 标签文字
+        let label = NSTextField(labelWithString: tag.name)
+        label.font = NSFont.systemFont(ofSize: 11)
+        label.textColor = NSColor.labelColor
+        label.lineBreakMode = .byTruncatingTail
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        pill.addSubview(label)
+
+        cell.textField = label
+
+        NSLayoutConstraint.activate([
+            pill.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 6),
+            pill.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
+            pill.heightAnchor.constraint(equalToConstant: pillHeight),
+
+            dot.leadingAnchor.constraint(equalTo: pill.leadingAnchor, constant: 8),
+            dot.centerYAnchor.constraint(equalTo: pill.centerYAnchor),
+            dot.widthAnchor.constraint(equalToConstant: 8),
+            dot.heightAnchor.constraint(equalToConstant: 8),
+
+            label.leadingAnchor.constraint(equalTo: dot.trailingAnchor, constant: 6),
+            label.centerYAnchor.constraint(equalTo: pill.centerYAnchor),
+            pill.trailingAnchor.constraint(equalTo: label.trailingAnchor, constant: 8),
+        ])
+    }
+
+    // MARK: - Device Cell (进度条 + 可用空间)
+
+    private func configureDeviceCell(cell: NSTableCellView, dev: DeviceItem) {
+        // 上行：图标(14x14) + 名称(11pt)
+        let icon = NSImageView()
+        icon.imageScaling = .scaleProportionallyDown
+        icon.translatesAutoresizingMaskIntoConstraints = false
+        let iconName: String
+        if dev.path == "/" {
+            iconName = "internaldrive"
+        } else if dev.path == FileManager.default.homeDirectoryForCurrentUser.path {
+            iconName = "house"
+        } else if dev.isNetwork {
+            iconName = "externaldrive.connected.to.line"
+        } else {
+            iconName = "externaldrive"
+        }
+        icon.image = NSImage(systemSymbolName: iconName, accessibilityDescription: "设备")
+            ?? NSImage(systemSymbolName: "externaldrive", accessibilityDescription: nil)
+
+        let nameField = NSTextField(labelWithString: dev.name)
+        nameField.font = NSFont.systemFont(ofSize: 11)
+        nameField.textColor = NSColor.labelColor
+        nameField.lineBreakMode = .byTruncatingTail
+        nameField.translatesAutoresizingMaskIntoConstraints = false
+
+        // 中行：水平进度条（4pt 高，填充宽度）
+        let progress = NSProgressIndicator()
+        progress.style = .bar
+        progress.controlSize = .small
+        progress.isIndeterminate = false
+        progress.minValue = 0
+        progress.maxValue = 1
+        // NSProgressIndicator.controlTint 自 10.15 起已弃用且不生效，
+        // 进度条已用部分自动跟随系统强调色（默认即为 systemBlue），剩余轨道为系统灰色。
+        progress.translatesAutoresizingMaskIntoConstraints = false
+        if dev.totalSize > 0 {
+            let used = Double(dev.totalSize - dev.freeSize) / Double(dev.totalSize)
+            progress.doubleValue = min(max(used, 0), 1)
+        } else {
+            progress.doubleValue = 0
+        }
+
+        // 下行：可用空间文字(9pt)
+        let freeField = NSTextField(labelWithString: formatFreeSpace(dev.freeSize))
+        freeField.font = NSFont.systemFont(ofSize: 9)
+        freeField.textColor = NSColor.tertiaryLabelColor
+        freeField.lineBreakMode = .byTruncatingTail
+        freeField.translatesAutoresizingMaskIntoConstraints = false
+
+        cell.addSubview(icon)
+        cell.addSubview(nameField)
+        cell.addSubview(progress)
+        cell.addSubview(freeField)
+        cell.imageView = icon
+        cell.textField = nameField
+
+        let progressHeight = progress.heightAnchor.constraint(equalToConstant: 4)
+        progressHeight.priority = .required
+
+        NSLayoutConstraint.activate([
+            icon.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 6),
+            icon.topAnchor.constraint(equalTo: cell.topAnchor, constant: 3),
+            icon.widthAnchor.constraint(equalToConstant: 14),
+            icon.heightAnchor.constraint(equalToConstant: 14),
+
+            nameField.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 6),
+            nameField.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -6),
+            nameField.centerYAnchor.constraint(equalTo: icon.centerYAnchor),
+
+            progress.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 6),
+            progress.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -6),
+            progress.topAnchor.constraint(equalTo: icon.bottomAnchor, constant: 2),
+            progressHeight,
+
+            freeField.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 6),
+            freeField.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -6),
+            freeField.topAnchor.constraint(equalTo: progress.bottomAnchor, constant: 2),
+        ])
+    }
+
+    // MARK: - Free Space Formatting
+
+    private func formatFreeSpace(_ bytes: UInt64) -> String {
+        if bytes == 0 { return "" }
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useGB, .useTB]
+        formatter.countStyle = .file
+        return "\(formatter.string(fromByteCount: Int64(bytes))) 可用"
     }
 
     // MARK: - Selection
