@@ -4,7 +4,7 @@ import AppKit
 /// 为每个 sidebar section（收藏夹、标签、存储设备）提供半透明圆角背景
 class GlassSectionMaskView: NSView {
 
-    var cornerRadius: CGFloat = 8 {
+    var cornerRadius: CGFloat = 10 {
         didSet { layer?.cornerRadius = cornerRadius }
     }
 

@@ -201,7 +201,7 @@ public class MainWindowController: NSWindowController {
         container.translatesAutoresizingMaskIntoConstraints = false
         container.wantsLayer = true
         container.layer?.backgroundColor = NSColor.windowBackgroundColor.withAlphaComponent(0.99).cgColor
-        container.layer?.cornerRadius = 8
+        container.layer?.cornerRadius = 12
         container.layer?.masksToBounds = true
 
         // 面包屑导航栏
@@ -474,7 +474,6 @@ public class MainWindowController: NSWindowController {
         let breadcrumbBar = side == .left ? leftBreadcrumbBar : rightBreadcrumbBar
         let fileListView = side == .left ? leftFileListView : rightFileListView
 
-        toolbar?.setPath(state.path)
         breadcrumbBar?.setPath(state.path)
         toolbar?.setCanGoBack(state.historyIndex > 0)
         toolbar?.setCanGoForward(state.historyIndex < state.history.count - 1)

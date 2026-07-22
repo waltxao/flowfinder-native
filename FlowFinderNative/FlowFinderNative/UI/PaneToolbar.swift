@@ -20,15 +20,12 @@ protocol PaneToolbarDelegate: AnyObject {
 class PaneToolbar: NSView {
     weak var delegate: PaneToolbarDelegate?
 
-    private var path: String = ""
-
-    // Row 1: Navigation + Breadcrumb
+    // Row 1: Navigation
     private var backButton: NSButton!
     private var forwardButton: NSButton!
     private var upButton: NSButton!
     private var refreshButton: NSButton!
-    private var breadcrumbScrollView: NSScrollView!
-    private var breadcrumbStack: NSStackView!
+    private var row1: NSStackView!
 
     // Row 2: Search + Sort + Group + View
     private var searchField: NSSearchField!
@@ -60,7 +57,7 @@ class PaneToolbar: NSView {
         setupRow2()
     }
 
-    // MARK: - Row 1: Navigation + Breadcrumb
+    // MARK: - Row 1: Navigation
 
     private func setupRow1() {
         backButton = createNavButton(systemSymbol: "chevron.backward", action: #selector(backClicked))
@@ -68,26 +65,7 @@ class PaneToolbar: NSView {
         upButton = createNavButton(systemSymbol: "chevron.up", action: #selector(upClicked))
         refreshButton = createNavButton(systemSymbol: "arrow.clockwise", action: #selector(refreshClicked))
 
-        breadcrumbStack = NSStackView()
-        breadcrumbStack.orientation = .horizontal
-        breadcrumbStack.alignment = .centerY
-        breadcrumbStack.spacing = 2
-        breadcrumbStack.detachesHiddenViews = false
-        breadcrumbStack.translatesAutoresizingMaskIntoConstraints = false
-        breadcrumbStack.edgeInsets = NSEdgeInsets(top: 0, left: 4, bottom: 0, right: 4)
-
-        breadcrumbScrollView = NSScrollView()
-        breadcrumbScrollView.translatesAutoresizingMaskIntoConstraints = false
-        breadcrumbScrollView.hasHorizontalScroller = false
-        breadcrumbScrollView.hasVerticalScroller = false
-        breadcrumbScrollView.autohidesScrollers = true
-        breadcrumbScrollView.drawsBackground = false
-        breadcrumbScrollView.backgroundColor = .clear
-        breadcrumbScrollView.contentView.drawsBackground = false
-        breadcrumbScrollView.contentView.backgroundColor = .clear
-        breadcrumbScrollView.documentView = breadcrumbStack
-
-        let row1 = NSStackView(views: [backButton, forwardButton, upButton, refreshButton, breadcrumbScrollView])
+        row1 = NSStackView(views: [backButton, forwardButton, upButton, refreshButton])
         row1.orientation = .horizontal
         row1.alignment = .centerY
         row1.spacing = 4
@@ -98,11 +76,9 @@ class PaneToolbar: NSView {
 
         NSLayoutConstraint.activate([
             row1.topAnchor.constraint(equalTo: topAnchor, constant: 4),
-            row1.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
-            row1.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            row1.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            row1.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
             row1.heightAnchor.constraint(equalToConstant: 32),
-
-            breadcrumbScrollView.heightAnchor.constraint(equalToConstant: 28),
         ])
     }
 
@@ -157,9 +133,9 @@ class PaneToolbar: NSView {
         addSubview(row2)
 
         NSLayoutConstraint.activate([
-            row2.topAnchor.constraint(equalTo: breadcrumbScrollView.bottomAnchor, constant: 4),
-            row2.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
-            row2.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            row2.topAnchor.constraint(equalTo: row1.bottomAnchor, constant: 4),
+            row2.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            row2.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
             row2.heightAnchor.constraint(equalToConstant: 32),
         ])
     }
@@ -199,38 +175,7 @@ class PaneToolbar: NSView {
     // MARK: - Public API
 
     func setPath(_ path: String) {
-        self.path = path
-        breadcrumbStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-
-        let segments = path.split(separator: "/").map(String.init)
-        var accumulatedPath = ""
-
-        let rootButton = createBreadcrumbButton(title: "Macintosh HD", path: "/")
-        breadcrumbStack.addArrangedSubview(rootButton)
-
-        for segment in segments {
-            accumulatedPath += "/" + segment
-            let sep = NSTextField(labelWithString: "›")
-            sep.textColor = NSColor.secondaryLabelColor
-            sep.translatesAutoresizingMaskIntoConstraints = false
-            breadcrumbStack.addArrangedSubview(sep)
-
-            let btn = createBreadcrumbButton(title: segment, path: accumulatedPath)
-            breadcrumbStack.addArrangedSubview(btn)
-        }
-    }
-
-    private func createBreadcrumbButton(title: String, path: String) -> NSButton {
-        let button = NSButton()
-        button.title = title
-        button.isBordered = false
-        button.bezelStyle = .inline
-        button.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
-        button.target = self
-        button.action = #selector(breadcrumbClicked(_:))
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.identifier = NSUserInterfaceItemIdentifier(path)
-        return button
+        // 面包屑已移至 BreadcrumbBar，此方法保留为空以兼容现有调用
     }
 
     func setCanGoBack(_ canGoBack: Bool) { backButton.isEnabled = canGoBack }
@@ -287,10 +232,5 @@ class PaneToolbar: NSView {
     @objc private func gridViewClicked() {
         updateViewModeHighlight(.grid)
         delegate?.paneToolbar(self, didChangeViewMode: .grid)
-    }
-
-    @objc private func breadcrumbClicked(_ sender: NSButton) {
-        guard let path = sender.identifier?.rawValue else { return }
-        delegate?.paneToolbar(self, didClickPath: path)
     }
 }

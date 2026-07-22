@@ -75,7 +75,7 @@ class SidebarView: NSView {
         deviceHeightConstraint = deviceMaskView.heightAnchor.constraint(equalToConstant: 48)
         deviceHeightConstraint.priority = .required
 
-        let padding: CGFloat = 8
+        let padding: CGFloat = 12
 
         NSLayoutConstraint.activate([
             // 主遮罩区域填充顶部剩余空间
@@ -90,17 +90,17 @@ class SidebarView: NSView {
             deviceMaskView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -padding),
             deviceHeightConstraint,
 
-            // 主 scrollView 填满主遮罩（圆角由 mask 的 masksToBounds 裁剪）
-            mainScrollView.topAnchor.constraint(equalTo: mainMaskView.topAnchor),
-            mainScrollView.leadingAnchor.constraint(equalTo: mainMaskView.leadingAnchor),
-            mainScrollView.trailingAnchor.constraint(equalTo: mainMaskView.trailingAnchor),
-            mainScrollView.bottomAnchor.constraint(equalTo: mainMaskView.bottomAnchor),
+            // 主 scrollView 填满主遮罩（内边距 8pt，圆角由 mask 的 masksToBounds 裁剪）
+            mainScrollView.topAnchor.constraint(equalTo: mainMaskView.topAnchor, constant: 8),
+            mainScrollView.leadingAnchor.constraint(equalTo: mainMaskView.leadingAnchor, constant: 8),
+            mainScrollView.trailingAnchor.constraint(equalTo: mainMaskView.trailingAnchor, constant: -8),
+            mainScrollView.bottomAnchor.constraint(equalTo: mainMaskView.bottomAnchor, constant: -8),
 
-            // 设备 scrollView 填满设备遮罩
-            deviceScrollView.topAnchor.constraint(equalTo: deviceMaskView.topAnchor),
-            deviceScrollView.leadingAnchor.constraint(equalTo: deviceMaskView.leadingAnchor),
-            deviceScrollView.trailingAnchor.constraint(equalTo: deviceMaskView.trailingAnchor),
-            deviceScrollView.bottomAnchor.constraint(equalTo: deviceMaskView.bottomAnchor),
+            // 设备 scrollView 填满设备遮罩（内边距 8pt）
+            deviceScrollView.topAnchor.constraint(equalTo: deviceMaskView.topAnchor, constant: 8),
+            deviceScrollView.leadingAnchor.constraint(equalTo: deviceMaskView.leadingAnchor, constant: 8),
+            deviceScrollView.trailingAnchor.constraint(equalTo: deviceMaskView.trailingAnchor, constant: -8),
+            deviceScrollView.bottomAnchor.constraint(equalTo: deviceMaskView.bottomAnchor, constant: -8),
         ])
 
         // 监听卷挂载/卸载通知
@@ -204,7 +204,11 @@ class SidebarView: NSView {
 private class SidebarDataSourceBase: NSObject, NSOutlineViewDataSource, NSOutlineViewDelegate {
 
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        return item is SidebarSection
+        // 收藏夹不可折叠（始终展开），标签和设备可折叠
+        if let section = item as? SidebarSection {
+            return section != .favorites
+        }
+        return false
     }
 
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
