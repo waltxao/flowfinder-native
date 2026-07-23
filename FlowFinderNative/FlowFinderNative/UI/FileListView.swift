@@ -38,6 +38,10 @@ public class FileListView: NSView {
         }
     }
 
+    /// 对侧面板的 ViewModel（由 MainWindowController 在 setupUI 中注入），
+    /// 用于拖拽 undo/redo 后刷新对侧面板（跨面板拖拽时源面板需同步更新）
+    weak var counterpartViewModel: PaneViewModel?
+
     public var onDoubleClick: ((FileEntry) -> Void)?
     public var onSelectionChanged: (([FileEntry]) -> Void)?
     public var onActivatePane: (() -> Void)?
@@ -721,21 +725,47 @@ extension FileListView {
 
                     // 注册撤销（通过 viewModel?.undoManager 访问 per-window UndoManager）
                     if success > 0, let vm = self?.viewModel, let undoManager = vm.undoManager {
+                        let counterpart = self?.counterpartViewModel
                         if isMove {
                             let pairs = zip(srcs, dstPaths).map { (src: $0, dst: $1) }
-                            undoManager.registerUndo(withTarget: vm) { targetVM in
+                            undoManager.registerUndo(withTarget: vm) { [weak counterpart] targetVM in
+                                // undo: 移回原位
                                 for (src, dst) in pairs {
                                     try? CoreBridge.shared.moveFile(src: dst, dst: src)
                                 }
+                                // 注册 redo：再次移动
+                                targetVM.undoManager?.registerUndo(withTarget: targetVM) { [weak counterpart] vm2 in
+                                    for (src, dst) in pairs {
+                                        try? CoreBridge.shared.moveFile(src: src, dst: dst)
+                                    }
+                                    vm2.refresh()
+                                    counterpart?.refresh()
+                                }
+                                targetVM.undoManager?.setActionName("移动 \(success) 个项目")
+                                // I1: 刷新双面板（跨面板移动 undo 后源面板需同步）
                                 targetVM.refresh()
+                                counterpart?.refresh()
                             }
                             undoManager.setActionName("移动 \(success) 个项目")
                         } else {
-                            undoManager.registerUndo(withTarget: vm) { targetVM in
-                                for dst in dstPaths {
+                            let pairs = zip(srcs, dstPaths).map { (src: $0, dst: $1) }
+                            undoManager.registerUndo(withTarget: vm) { [weak counterpart] targetVM in
+                                // undo: 删除复制项
+                                for (_, dst) in pairs {
                                     try? CoreBridge.shared.deleteFile(path: dst)
                                 }
+                                // 注册 redo：重新复制
+                                targetVM.undoManager?.registerUndo(withTarget: targetVM) { [weak counterpart] vm2 in
+                                    for (src, dst) in pairs {
+                                        try? CoreBridge.shared.copyFile(src: src, dst: dst)
+                                    }
+                                    vm2.refresh()
+                                    counterpart?.refresh()
+                                }
+                                targetVM.undoManager?.setActionName("复制 \(success) 个项目")
+                                // I1: 刷新双面板
                                 targetVM.refresh()
+                                counterpart?.refresh()
                             }
                             undoManager.setActionName("复制 \(success) 个项目")
                         }

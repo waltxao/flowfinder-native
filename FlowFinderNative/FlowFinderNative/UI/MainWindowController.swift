@@ -190,6 +190,12 @@ public class MainWindowController: NSWindowController {
         leftPaneViewModel.undoManager = undoManager
         rightPaneViewModel.undoManager = undoManager
 
+        // I1: 注入对侧 ViewModel，使 FileListView/FileGridView 拖拽 undo 闭包能刷新双面板
+        leftFileListView.counterpartViewModel = rightPaneViewModel
+        rightFileListView.counterpartViewModel = leftPaneViewModel
+        leftFileGridView.counterpartViewModel = rightPaneViewModel
+        rightFileGridView.counterpartViewModel = leftPaneViewModel
+
         // 初始 divider 位置
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -469,7 +475,7 @@ public class MainWindowController: NSWindowController {
         let destPath = activePaneViewModel.currentPath
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            var copiedPaths: [String] = []
+            var copiedPairs: [(src: String, dst: String)] = []
             for entry in selected {
                 let fileName = entry.name
                 let ext = (fileName as NSString).pathExtension
@@ -479,7 +485,7 @@ public class MainWindowController: NSWindowController {
 
                 do {
                     try CoreBridge.shared.copyFile(src: entry.path, dst: dstPath)
-                    copiedPaths.append(dstPath)
+                    copiedPairs.append((src: entry.path, dst: dstPath))
                 } catch {
                     DispatchQueue.main.async {
                         self?.showError(error: error)
@@ -493,16 +499,25 @@ public class MainWindowController: NSWindowController {
                 self.activePaneViewModel.refresh()
 
                 // 注册撤销：删除复制的文件
-                if !copiedPaths.isEmpty {
-                    let copied = copiedPaths
+                if !copiedPairs.isEmpty {
+                    let pairs = copiedPairs
                     let activeSide = self.activePane
                     self.undoManager.registerUndo(withTarget: self) { ctrl in
-                        for dst in copied {
+                        // undo: 删除复制的文件
+                        for (_, dst) in pairs {
                             try? CoreBridge.shared.deleteFile(path: dst)
                         }
+                        // 注册 redo：重新复制
+                        ctrl.undoManager?.registerUndo(withTarget: ctrl) { ctrl2 in
+                            for (src, dst) in pairs {
+                                try? CoreBridge.shared.copyFile(src: src, dst: dst)
+                            }
+                            ctrl2.refreshPane(activeSide)
+                        }
+                        ctrl.undoManager?.setActionName("复制 \(pairs.count) 个项目")
                         ctrl.refreshPane(activeSide)
                     }
-                    self.undoManager.setActionName("复制 \(copied.count) 个项目")
+                    self.undoManager.setActionName("复制 \(pairs.count) 个项目")
                 }
             }
         }
@@ -750,18 +765,39 @@ extension MainWindowController {
                         if isMove {
                             let pairs = zip(srcs, dstPaths).map { (src: $0, dst: $1) }
                             self.undoManager.registerUndo(withTarget: self) { ctrl in
+                                // undo: 移回原位
                                 for (src, dst) in pairs {
                                     try? CoreBridge.shared.moveFile(src: dst, dst: src)
                                 }
+                                // 注册 redo：再次移动
+                                ctrl.undoManager?.registerUndo(withTarget: ctrl) { ctrl2 in
+                                    for (src, dst) in pairs {
+                                        try? CoreBridge.shared.moveFile(src: src, dst: dst)
+                                    }
+                                    ctrl2.refreshPane(.left)
+                                    ctrl2.refreshPane(.right)
+                                }
+                                ctrl.undoManager?.setActionName("移动 \(success) 个项目")
                                 ctrl.refreshPane(.left)
                                 ctrl.refreshPane(.right)
                             }
                             self.undoManager.setActionName("移动 \(success) 个项目")
                         } else {
+                            let pairs = zip(srcs, dstPaths).map { (src: $0, dst: $1) }
                             self.undoManager.registerUndo(withTarget: self) { ctrl in
-                                for dst in dstPaths {
+                                // undo: 删除复制项
+                                for (_, dst) in pairs {
                                     try? CoreBridge.shared.deleteFile(path: dst)
                                 }
+                                // 注册 redo：重新复制
+                                ctrl.undoManager?.registerUndo(withTarget: ctrl) { ctrl2 in
+                                    for (src, dst) in pairs {
+                                        try? CoreBridge.shared.copyFile(src: src, dst: dst)
+                                    }
+                                    ctrl2.refreshPane(.left)
+                                    ctrl2.refreshPane(.right)
+                                }
+                                ctrl.undoManager?.setActionName("复制 \(success) 个项目")
                                 ctrl.refreshPane(.left)
                                 ctrl.refreshPane(.right)
                             }
@@ -893,18 +929,37 @@ extension MainWindowController {
                     let items = movedOrCopied
                     if isMove {
                         self.undoManager.registerUndo(withTarget: self) { ctrl in
+                            // undo: 移回原位
                             for (src, dst) in items {
                                 try? CoreBridge.shared.moveFile(src: dst, dst: src)
                             }
+                            // 注册 redo：再次移动
+                            ctrl.undoManager?.registerUndo(withTarget: ctrl) { ctrl2 in
+                                for (src, dst) in items {
+                                    try? CoreBridge.shared.moveFile(src: src, dst: dst)
+                                }
+                                ctrl2.refreshPane(sourceSide)
+                                ctrl2.refreshPane(destSide)
+                            }
+                            ctrl.undoManager?.setActionName("移动 \(items.count) 个项目")
                             ctrl.refreshPane(sourceSide)
                             ctrl.refreshPane(destSide)
                         }
                         self.undoManager.setActionName("移动 \(items.count) 个项目")
                     } else {
                         self.undoManager.registerUndo(withTarget: self) { ctrl in
+                            // undo: 删除复制项
                             for (_, dst) in items {
                                 try? CoreBridge.shared.deleteFile(path: dst)
                             }
+                            // 注册 redo：重新复制
+                            ctrl.undoManager?.registerUndo(withTarget: ctrl) { ctrl2 in
+                                for (src, dst) in items {
+                                    try? CoreBridge.shared.copyFile(src: src, dst: dst)
+                                }
+                                ctrl2.refreshPane(destSide)
+                            }
+                            ctrl.undoManager?.setActionName("复制 \(items.count) 个项目")
                             ctrl.refreshPane(destSide)
                         }
                         self.undoManager.setActionName("复制 \(items.count) 个项目")

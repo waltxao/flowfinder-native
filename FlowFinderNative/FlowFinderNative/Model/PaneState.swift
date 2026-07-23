@@ -214,16 +214,38 @@ public class PaneViewModel: ObservableObject {
 
             // 注册撤销：从废纸篓恢复（moveItem 回原路径）
             let items = trashedItems
+            let originalDir = items.first.map { ($0.originalPath as NSString).deletingLastPathComponent } ?? ""
             undoManager?.registerUndo(withTarget: self) { vm in
+                var restoreFailed = 0
                 for (originalPath, trashURL) in items {
-                    try? FileManager.default.moveItem(at: trashURL, to: URL(fileURLWithPath: originalPath))
+                    do {
+                        try FileManager.default.moveItem(at: trashURL, to: URL(fileURLWithPath: originalPath))
+                    } catch {
+                        // I3: 原路径已被占用等原因导致恢复失败，记录并反馈
+                        restoreFailed += 1
+                    }
                 }
                 // 失效缓存以反映恢复
                 if let firstPath = items.first?.originalPath {
                     let dir = (firstPath as NSString).deletingLastPathComponent
                     try? CoreBridge.shared.invalidateCache(path: dir)
                 }
-                vm.loadDirectory()
+                // 注册 redo：重新移入废纸篓
+                vm.undoManager?.registerUndo(withTarget: vm) { vm2 in
+                    for (originalPath, _) in items {
+                        try? FileManager.default.trashItem(at: URL(fileURLWithPath: originalPath), resultingItemURL: nil)
+                    }
+                    vm2.loadDirectory()
+                }
+                vm.undoManager?.setActionName("删除 \(items.count) 个项目")
+                if restoreFailed > 0 {
+                    vm.state.error = "\(restoreFailed) 个项目无法恢复（原路径已被占用）"
+                }
+                // I4: 仅当 VM 仍在原目录时才刷新（用户可能已导航离开），
+                // 文件已恢复到原位置，用户导航回去后自然可见。
+                if vm.state.path == originalDir {
+                    vm.loadDirectory()
+                }
             }
             undoManager?.setActionName("删除 \(trashedItems.count) 个项目")
 
