@@ -453,27 +453,29 @@ extension FileGridView {
         let isMove = isMoveOperation(sender)
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            for url in urls {
-                let srcPath = url.path
-                let fileName = url.lastPathComponent
-                let dstPath = (destPath as NSString).appendingPathComponent(fileName)
-
-                do {
-                    if isMove {
-                        try CoreBridge.shared.moveFile(src: srcPath, dst: dstPath)
-                    } else {
-                        try CoreBridge.shared.copyFile(src: srcPath, dst: dstPath)
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        self?.showError(error: error)
-                    }
-                    return
+            let srcs = urls.map { $0.path }
+            let total = srcs.count
+            do {
+                let success: Int
+                if isMove {
+                    success = try CoreBridge.shared.parallelMove(srcs: srcs, dstDir: destPath)
+                } else {
+                    success = try CoreBridge.shared.parallelCopy(srcs: srcs, dstDir: destPath)
                 }
-            }
 
-            DispatchQueue.main.async {
-                self?.viewModel?.refresh()
+                DispatchQueue.main.async {
+                    self?.viewModel?.refresh()
+                    if success < total {
+                        self?.showError(error: NSError(
+                            domain: "FlowFinder", code: -1,
+                            userInfo: [NSLocalizedDescriptionKey: "\(total - success) 个项目操作失败"])
+                        )
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self?.showError(error: error)
+                }
             }
         }
 

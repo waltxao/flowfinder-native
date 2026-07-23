@@ -184,16 +184,15 @@ public class PaneViewModel: ObservableObject {
     func deleteSelected() {
         let toDelete = state.selectedFiles
         guard !toDelete.isEmpty else { return }
+        let paths = toDelete.map { $0.path }
         do {
-            for entry in toDelete {
-                if entry.isDirectory {
-                    try CoreBridge.shared.deleteDirectory(path: entry.path)
-                } else {
-                    try CoreBridge.shared.deleteFile(path: entry.path)
-                }
-            }
+            // rayon-backed parallel delete; directories are removed recursively.
+            let success = try CoreBridge.shared.parallelDelete(paths: paths)
             state.selectedFiles.removeAll()
             loadDirectory()
+            if success < paths.count {
+                state.error = "\(paths.count - success) 个项目删除失败"
+            }
         } catch {
             state.error = error.localizedDescription
         }

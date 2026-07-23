@@ -202,6 +202,61 @@ public func ff_rename(
     _ dst: UnsafePointer<CChar>
 ) -> Int32
 
+// MARK: - Parallel Batch Operations FFI Declarations
+
+/// C-compatible batch progress callback.
+/// - Parameters:
+///   - completed: Number of operations completed so far.
+///   - total: Total number of operations.
+///   - currentFile: Path of the file currently being processed (may be nil).
+///   - userData: Opaque pointer passed through from the caller.
+public typealias FFBatchProgressCallback = @convention(c) (
+    Int, Int, UnsafePointer<CChar>?, UnsafeMutableRawPointer?
+) -> Void
+
+/// Parallel copy multiple files into a destination directory (rayon-backed).
+/// - Parameters:
+///   - srcs: Array of source path C strings.
+///   - srcCount: Number of source paths.
+///   - dstDir: Destination directory C string. Each source keeps its basename.
+///   - progress: Callback invoked from worker threads with (completed, total, nil, userData).
+///   - userData: Opaque pointer passed to the callback.
+/// - Returns: Number of successfully copied files (>= 0); negative error code on invalid input.
+@_silgen_name("ff_parallel_copy")
+public func ff_parallel_copy(
+    _ srcs: UnsafePointer<UnsafePointer<CChar>?>?,
+    _ srcCount: Int,
+    _ dstDir: UnsafePointer<CChar>,
+    _ progress: @convention(c) (Int, Int, UnsafePointer<CChar>?, UnsafeMutableRawPointer?) -> Void,
+    _ userData: UnsafeMutableRawPointer?
+) -> Int32
+
+/// Parallel move multiple files into a destination directory (rayon-backed).
+/// Same semantics as `ff_parallel_copy`, but moves files instead.
+@_silgen_name("ff_parallel_move")
+public func ff_parallel_move(
+    _ srcs: UnsafePointer<UnsafePointer<CChar>?>?,
+    _ srcCount: Int,
+    _ dstDir: UnsafePointer<CChar>,
+    _ progress: @convention(c) (Int, Int, UnsafePointer<CChar>?, UnsafeMutableRawPointer?) -> Void,
+    _ userData: UnsafeMutableRawPointer?
+) -> Int32
+
+/// Parallel delete multiple files/directories (rayon-backed).
+/// - Parameters:
+///   - paths: Array of path C strings to delete (directories removed recursively).
+///   - pathCount: Number of paths.
+///   - progress: Callback invoked from worker threads with (completed, total, nil, userData).
+///   - userData: Opaque pointer passed to the callback.
+/// - Returns: Number of successfully deleted paths (>= 0); negative error code on invalid input.
+@_silgen_name("ff_parallel_delete")
+public func ff_parallel_delete(
+    _ paths: UnsafePointer<UnsafePointer<CChar>?>?,
+    _ pathCount: Int,
+    _ progress: @convention(c) (Int, Int, UnsafePointer<CChar>?, UnsafeMutableRawPointer?) -> Void,
+    _ userData: UnsafeMutableRawPointer?
+) -> Int32
+
 // MARK: - Duplicate File Detection FFI Declarations
 
 /// Scan for duplicate files under a path

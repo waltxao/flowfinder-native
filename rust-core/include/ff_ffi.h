@@ -80,6 +80,8 @@ typedef void (*FFEntryCallback)(const FFEntryRef *entry, void *user_data);
 typedef void (*FFDedupProgressCallback)(size_t scanned, size_t total, void *user_data);
 typedef void (*FFDedupGroupCallback)(const FFDuplicateGroup *group, void *user_data);
 typedef void (*FFSearchCallback)(const FFSearchResult *result, void *user_data);
+typedef void (*FFBatchProgressCallback)(size_t completed, size_t total,
+                                        const char *current_file, void *user_data);
 
 /* ── Directory listing API ──────────────────────────────────── */
 ff_error_t ff_list_dir(const char *path, FFEntryCallback callback, void *user_data);
@@ -91,6 +93,15 @@ ff_error_t ff_delete_file(const char *path);
 ff_error_t ff_delete_dir(const char *path);
 ff_error_t ff_create_dir(const char *path);
 ff_error_t ff_rename(const char *src, const char *dst);
+
+/* ── Parallel Batch Operations (rayon-backed) ─────────────── */
+/* Returns number of successful operations (>= 0); FF_ERR_INVALID_PATH on null inputs. */
+int ff_parallel_copy(const char *const *srcs, size_t src_count, const char *dst_dir,
+                     FFBatchProgressCallback progress, void *user_data);
+int ff_parallel_move(const char *const *srcs, size_t src_count, const char *dst_dir,
+                     FFBatchProgressCallback progress, void *user_data);
+int ff_parallel_delete(const char *const *paths, size_t path_count,
+                       FFBatchProgressCallback progress, void *user_data);
 
 /* ── Duplicate file detection API ─────────────────────────── */
 ff_error_t ff_scan_duplicates(const char *path,

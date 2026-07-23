@@ -216,6 +216,14 @@ private struct TaskListContext {
     let tasks: UnsafeMutablePointer<[TaskInfo]>
 }
 
+/// Box holding an optional Swift progress closure for parallel batch operations.
+/// Stored on the heap so a `@convention(c)` FFI callback can recover it via
+/// `Unmanaged` and invoke the closure from worker threads.
+private final class ProgressBox {
+    let handler: ((Int, Int) -> Void)?
+    init(handler: ((Int, Int) -> Void)?) { self.handler = handler }
+}
+
 /// Context for task progress callback
 private struct TaskProgressContext {
     let progress: UnsafeMutablePointer<Double>
@@ -509,6 +517,173 @@ public final class CoreBridge {
             let errorMessage = getLastError()
             throw CoreBridgeError.ffiError(errorMessage)
         }
+    }
+
+    // MARK: - Parallel Batch File Operations
+
+    /// No-op C callback used when the caller does not supply a progress handler.
+    private static let noopBatchProgress: FFBatchProgressCallback = { _, _, _, _ in }
+
+    /// Parallel copy multiple files into a destination directory (rayon-backed).
+    ///
+    /// Each source file is copied (CoW when possible) into `dstDir` keeping its
+    /// basename. Partial failures are reported via the return value.
+    ///
+    /// - Parameters:
+    ///   - srcs: Array of source file paths.
+    ///   - dstDir: Destination directory path.
+    ///   - progress: Optional `(completed, total)` callback invoked from worker threads.
+    /// - Returns: Number of successfully copied files.
+    /// - Throws: `CoreBridgeError.ffiError` if FFI returns a negative error code.
+    func parallelCopy(srcs: [String], dstDir: String, progress: ((Int, Int) -> Void)? = nil) throws -> Int {
+        guard !dstDir.isEmpty else {
+            throw CoreBridgeError.invalidPath("Destination directory is empty")
+        }
+        if srcs.isEmpty { return 0 }
+
+        var ffiResult: Int32 = -1
+        let semaphore = DispatchSemaphore(value: 0)
+
+        // Allocate C string pointers (`strdup`) so the array remains valid
+        // across the FFI call. Cleanup happens after `semaphore.wait()`.
+        let cStringPtrs: [UnsafeMutablePointer<CChar>?] = srcs.map { strdup($0) }
+        defer {
+            for p in cStringPtrs { if let p = p { free(p) } }
+        }
+
+        // Bridge the optional Swift closure to a C function pointer via a
+        // context box. When `progress` is nil, a no-op callback is used.
+        let progressBox = ProgressBox(handler: progress)
+        let progressCallback: FFBatchProgressCallback = { completed, total, _, userData in
+            guard let userData = userData else { return }
+            let box = Unmanaged<ProgressBox>.fromOpaque(userData).takeUnretainedValue()
+            box.handler?(completed, total)
+        }
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            let result = dstDir.withCString { cDstDir in
+                cStringPtrs.withUnsafeBufferPointer { buffer in
+                    ff_parallel_copy(
+                        buffer.baseAddress,
+                        cStringPtrs.count,
+                        cDstDir,
+                        progressBox.handler != nil ? progressCallback : CoreBridge.noopBatchProgress,
+                        Unmanaged.passUnretained(progressBox).toOpaque()
+                    )
+                }
+            }
+            ffiResult = result
+        }
+
+        semaphore.wait()
+
+        guard ffiResult >= 0 else {
+            let errorMessage = getLastError()
+            throw CoreBridgeError.ffiError(errorMessage)
+        }
+        return Int(ffiResult)
+    }
+
+    /// Parallel move multiple files into a destination directory (rayon-backed).
+    ///
+    /// Same semantics as `parallelCopy`, but moves files instead. Falls back
+    /// to copy-then-delete for cross-volume moves.
+    func parallelMove(srcs: [String], dstDir: String, progress: ((Int, Int) -> Void)? = nil) throws -> Int {
+        guard !dstDir.isEmpty else {
+            throw CoreBridgeError.invalidPath("Destination directory is empty")
+        }
+        if srcs.isEmpty { return 0 }
+
+        var ffiResult: Int32 = -1
+        let semaphore = DispatchSemaphore(value: 0)
+
+        let cStringPtrs: [UnsafeMutablePointer<CChar>?] = srcs.map { strdup($0) }
+        defer {
+            for p in cStringPtrs { if let p = p { free(p) } }
+        }
+
+        let progressBox = ProgressBox(handler: progress)
+        let progressCallback: FFBatchProgressCallback = { completed, total, _, userData in
+            guard let userData = userData else { return }
+            let box = Unmanaged<ProgressBox>.fromOpaque(userData).takeUnretainedValue()
+            box.handler?(completed, total)
+        }
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            let result = dstDir.withCString { cDstDir in
+                cStringPtrs.withUnsafeBufferPointer { buffer in
+                    ff_parallel_move(
+                        buffer.baseAddress,
+                        cStringPtrs.count,
+                        cDstDir,
+                        progressBox.handler != nil ? progressCallback : CoreBridge.noopBatchProgress,
+                        Unmanaged.passUnretained(progressBox).toOpaque()
+                    )
+                }
+            }
+            ffiResult = result
+        }
+
+        semaphore.wait()
+
+        guard ffiResult >= 0 else {
+            let errorMessage = getLastError()
+            throw CoreBridgeError.ffiError(errorMessage)
+        }
+        return Int(ffiResult)
+    }
+
+    /// Parallel delete multiple files/directories (rayon-backed).
+    /// Directories are removed recursively.
+    ///
+    /// - Parameters:
+    ///   - paths: Array of paths to delete.
+    ///   - progress: Optional `(completed, total)` callback invoked from worker threads.
+    /// - Returns: Number of successfully deleted paths.
+    /// - Throws: `CoreBridgeError.ffiError` if FFI returns a negative error code.
+    func parallelDelete(paths: [String], progress: ((Int, Int) -> Void)? = nil) throws -> Int {
+        if paths.isEmpty { return 0 }
+
+        var ffiResult: Int32 = -1
+        let semaphore = DispatchSemaphore(value: 0)
+
+        let cStringPtrs: [UnsafeMutablePointer<CChar>?] = paths.map { strdup($0) }
+        defer {
+            for p in cStringPtrs { if let p = p { free(p) } }
+        }
+
+        let progressBox = ProgressBox(handler: progress)
+        let progressCallback: FFBatchProgressCallback = { completed, total, _, userData in
+            guard let userData = userData else { return }
+            let box = Unmanaged<ProgressBox>.fromOpaque(userData).takeUnretainedValue()
+            box.handler?(completed, total)
+        }
+
+        ffiQueue.async {
+            defer { semaphore.signal() }
+
+            let result = cStringPtrs.withUnsafeBufferPointer { buffer in
+                ff_parallel_delete(
+                    buffer.baseAddress,
+                    cStringPtrs.count,
+                    progressBox.handler != nil ? progressCallback : CoreBridge.noopBatchProgress,
+                    Unmanaged.passUnretained(progressBox).toOpaque()
+                )
+            }
+            ffiResult = result
+        }
+
+        semaphore.wait()
+
+        guard ffiResult >= 0 else {
+            let errorMessage = getLastError()
+            throw CoreBridgeError.ffiError(errorMessage)
+        }
+        return Int(ffiResult)
     }
 
     // MARK: - Async File Operations

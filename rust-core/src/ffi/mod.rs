@@ -1621,6 +1621,199 @@ pub extern "C" fn ff_organize_by_type(
     }
 }
 
+// ── Parallel Batch Operations (rayon-backed) ──────────────────────
+
+/// Parse a `*const *const c_char` array of NUL-terminated UTF-8 C strings
+/// into a `Vec<String>`. Null pointers within the array become empty strings.
+///
+/// # Safety
+///
+/// - `ptrs` must point to an array of at least `count` valid `*const c_char`
+///   entries; each non-null entry must be a NUL-terminated UTF-8 C string.
+unsafe fn parse_c_string_array(ptrs: *const *const c_char, count: usize) -> Vec<String> {
+    let mut out = Vec::with_capacity(count);
+    for i in 0..count {
+        let p = *ptrs.add(i);
+        if p.is_null() {
+            out.push(String::new());
+        } else {
+            out.push(CStr::from_ptr(p).to_string_lossy().to_string());
+        }
+    }
+    out
+}
+
+/// Parallel copy multiple files into a destination directory using rayon.
+///
+/// Each source file is copied (CoW when possible) into `dst_dir` keeping its
+/// basename. The progress callback is invoked from worker threads as files
+/// complete.
+///
+/// # Arguments
+///
+/// - `srcs` — Array of source path C strings.
+/// - `src_count` — Number of entries in `srcs`.
+/// - `dst_dir` — Destination directory C string.
+/// - `progress` — Callback invoked with (completed, total, current_file, user_data).
+///   `current_file` is always passed as null because `parallel_ops` does not
+///   report per-file names.
+/// - `user_data` — Opaque pointer passed through to the callback.
+///
+/// # Returns
+///
+/// - Number of successfully copied files (>= 0). Partial failures are
+///   reflected as a count less than `src_count`.
+/// - `FF_ERR_INVALID_PATH` if `srcs` (when `src_count > 0`) or `dst_dir` is null.
+///
+/// # Safety
+///
+/// - `srcs` must point to `src_count` valid C string pointers.
+/// - `dst_dir` must be a valid NUL-terminated UTF-8 C string.
+#[no_mangle]
+pub extern "C" fn ff_parallel_copy(
+    srcs: *const *const c_char,
+    src_count: usize,
+    dst_dir: *const c_char,
+    progress: FFBatchProgressCallback,
+    user_data: *mut c_void,
+) -> c_int {
+    if srcs.is_null() && src_count > 0 {
+        set_last_error("srcs is null".to_string());
+        return FF_ERR_INVALID_PATH;
+    }
+    if dst_dir.is_null() {
+        set_last_error("dst_dir is null".to_string());
+        return FF_ERR_INVALID_PATH;
+    }
+
+    let srcs_vec = if src_count == 0 {
+        Vec::new()
+    } else {
+        unsafe { parse_c_string_array(srcs, src_count) }
+    };
+    let dst_dir_str = unsafe {
+        match CStr::from_ptr(dst_dir).to_str() {
+            Ok(s) => s.to_string(),
+            Err(_) => {
+                set_last_error("dst_dir is not valid UTF-8".to_string());
+                return FF_ERR_INVALID_PATH;
+            }
+        }
+    };
+
+    // Cast `user_data` to `usize` so the closure captures a `Sync` value
+    // (raw pointers are `!Sync` by default, which would violate the
+    // `Fn(...) + Sync` bound required by rayon's `par_iter`).
+    let user_data_addr = user_data as usize;
+    let results = crate::core::parallel_ops::parallel_copy_files(
+        &srcs_vec,
+        &dst_dir_str,
+        move |done, total| progress(done, total, ptr::null(), user_data_addr as *mut c_void),
+    );
+    let success = results.iter().filter(|(_, r)| r.is_ok()).count();
+    clear_last_error();
+    success as c_int
+}
+
+/// Parallel move multiple files into a destination directory using rayon.
+///
+/// Same semantics as [`ff_parallel_copy`], but moves files instead. Falls back
+/// to copy-then-delete when `rename(2)` fails (e.g. cross-volume).
+///
+/// # Safety
+///
+/// See [`ff_parallel_copy`].
+#[no_mangle]
+pub extern "C" fn ff_parallel_move(
+    srcs: *const *const c_char,
+    src_count: usize,
+    dst_dir: *const c_char,
+    progress: FFBatchProgressCallback,
+    user_data: *mut c_void,
+) -> c_int {
+    if srcs.is_null() && src_count > 0 {
+        set_last_error("srcs is null".to_string());
+        return FF_ERR_INVALID_PATH;
+    }
+    if dst_dir.is_null() {
+        set_last_error("dst_dir is null".to_string());
+        return FF_ERR_INVALID_PATH;
+    }
+
+    let srcs_vec = if src_count == 0 {
+        Vec::new()
+    } else {
+        unsafe { parse_c_string_array(srcs, src_count) }
+    };
+    let dst_dir_str = unsafe {
+        match CStr::from_ptr(dst_dir).to_str() {
+            Ok(s) => s.to_string(),
+            Err(_) => {
+                set_last_error("dst_dir is not valid UTF-8".to_string());
+                return FF_ERR_INVALID_PATH;
+            }
+        }
+    };
+
+    let user_data_addr = user_data as usize;
+    let results = crate::core::parallel_ops::parallel_move_files(
+        &srcs_vec,
+        &dst_dir_str,
+        move |done, total| progress(done, total, ptr::null(), user_data_addr as *mut c_void),
+    );
+    let success = results.iter().filter(|(_, r)| r.is_ok()).count();
+    clear_last_error();
+    success as c_int
+}
+
+/// Parallel delete multiple files/directories using rayon.
+///
+/// Directories are removed recursively; files are unlinked. Partial failures
+/// are reflected as a success count less than `path_count`.
+///
+/// # Arguments
+///
+/// - `paths` — Array of path C strings to delete.
+/// - `path_count` — Number of entries in `paths`.
+/// - `progress` — Callback invoked with (completed, total, null, user_data).
+/// - `user_data` — Opaque pointer passed through to the callback.
+///
+/// # Returns
+///
+/// - Number of successfully deleted paths (>= 0).
+/// - `FF_ERR_INVALID_PATH` if `paths` is null when `path_count > 0`.
+///
+/// # Safety
+///
+/// - `paths` must point to `path_count` valid C string pointers.
+#[no_mangle]
+pub extern "C" fn ff_parallel_delete(
+    paths: *const *const c_char,
+    path_count: usize,
+    progress: FFBatchProgressCallback,
+    user_data: *mut c_void,
+) -> c_int {
+    if paths.is_null() && path_count > 0 {
+        set_last_error("paths is null".to_string());
+        return FF_ERR_INVALID_PATH;
+    }
+
+    let paths_vec = if path_count == 0 {
+        Vec::new()
+    } else {
+        unsafe { parse_c_string_array(paths, path_count) }
+    };
+
+    let user_data_addr = user_data as usize;
+    let results = crate::core::parallel_ops::parallel_delete_files(
+        &paths_vec,
+        move |done, total| progress(done, total, ptr::null(), user_data_addr as *mut c_void),
+    );
+    let success = results.iter().filter(|(_, r)| r.is_ok()).count();
+    clear_last_error();
+    success as c_int
+}
+
 // ── Thumbnail Generation ──────────────────────────────────────────
 
 /// Generate a thumbnail for an image file.
@@ -2451,5 +2644,153 @@ mod tests {
     fn test_ff_volume_mount_null() {
         let result = crate::core::volumes::ff_volume_mount(std::ptr::null(), std::ptr::null());
         assert_eq!(result, FF_ERR_INVALID_PATH);
+    }
+
+    // ── Parallel Batch Operations Tests ─────────────────────────────
+
+    extern "C" fn noop_batch_progress(
+        _completed: usize,
+        _total: usize,
+        _current_file: *const c_char,
+        _user_data: *mut c_void,
+    ) {
+    }
+
+    /// Helper: build a `Vec<CString>` plus a `Vec<*const c_char>` view into it
+    /// suitable for passing to the parallel FFI functions.
+    fn build_c_string_array(paths: &[String]) -> (Vec<CString>, Vec<*const c_char>) {
+        let cstrings: Vec<CString> = paths
+            .iter()
+            .map(|s| CString::new(s.as_str()).unwrap())
+            .collect();
+        let ptrs: Vec<*const c_char> = cstrings.iter().map(|cs| cs.as_ptr()).collect();
+        (cstrings, ptrs)
+    }
+
+    #[test]
+    fn test_ff_parallel_copy() {
+        use std::fs;
+        use tempfile::tempdir;
+
+        let src_dir = tempdir().unwrap();
+        let dst_dir = tempdir().unwrap();
+        let n: usize = 5;
+
+        let srcs: Vec<String> = (0..n)
+            .map(|i| {
+                let path = src_dir.path().join(format!("parallel_copy_{}.txt", i));
+                fs::write(&path, format!("content-{}", i)).unwrap();
+                path.to_str().unwrap().to_string()
+            })
+            .collect();
+
+        let dst_dir_c = CString::new(dst_dir.path().to_str().unwrap()).unwrap();
+        let (_cstrings, ptrs) = build_c_string_array(&srcs);
+
+        let result = ff_parallel_copy(
+            ptrs.as_ptr(),
+            ptrs.len(),
+            dst_dir_c.as_ptr(),
+            noop_batch_progress,
+            ptr::null_mut(),
+        );
+
+        assert_eq!(result as usize, n, "all {} files should copy successfully", n);
+
+        // Verify destination files exist with correct contents.
+        for i in 0..n {
+            let dst = dst_dir.path().join(format!("parallel_copy_{}.txt", i));
+            assert!(dst.exists(), "destination file {} should exist", i);
+            assert_eq!(
+                fs::read_to_string(&dst).unwrap(),
+                format!("content-{}", i),
+                "destination content must match source"
+            );
+        }
+    }
+
+    #[test]
+    fn test_ff_parallel_copy_null_inputs() {
+        let dst_dir_c = CString::new("/tmp").unwrap();
+        // Non-zero count with null srcs array → FF_ERR_INVALID_PATH.
+        assert_eq!(
+            ff_parallel_copy(
+                ptr::null(),
+                3,
+                dst_dir_c.as_ptr(),
+                noop_batch_progress,
+                ptr::null_mut(),
+            ),
+            FF_ERR_INVALID_PATH
+        );
+        // Null dst_dir → FF_ERR_INVALID_PATH.
+        assert_eq!(
+            ff_parallel_copy(
+                ptr::null(),
+                0,
+                ptr::null(),
+                noop_batch_progress,
+                ptr::null_mut(),
+            ),
+            FF_ERR_INVALID_PATH
+        );
+    }
+
+    #[test]
+    fn test_ff_parallel_delete() {
+        use std::fs;
+        use tempfile::tempdir;
+
+        let dir = tempdir().unwrap();
+        let n: usize = 5;
+
+        let paths: Vec<String> = (0..n)
+            .map(|i| {
+                let path = dir.path().join(format!("parallel_del_{}.txt", i));
+                fs::write(&path, b"to-be-deleted").unwrap();
+                path.to_str().unwrap().to_string()
+            })
+            .collect();
+
+        let (_cstrings, ptrs) = build_c_string_array(&paths);
+
+        let result = ff_parallel_delete(
+            ptrs.as_ptr(),
+            ptrs.len(),
+            noop_batch_progress,
+            ptr::null_mut(),
+        );
+
+        assert_eq!(result as usize, n, "all {} files should be deleted", n);
+
+        for p in &paths {
+            assert!(!std::path::Path::new(p).exists(), "path should be gone: {}", p);
+        }
+    }
+
+    #[test]
+    fn test_ff_parallel_delete_null_inputs() {
+        // Non-zero count with null paths array → FF_ERR_INVALID_PATH.
+        assert_eq!(
+            ff_parallel_delete(ptr::null(), 2, noop_batch_progress, ptr::null_mut()),
+            FF_ERR_INVALID_PATH
+        );
+    }
+
+    #[test]
+    fn test_ff_parallel_copy_empty() {
+        use tempfile::tempdir;
+
+        let dst_dir = tempdir().unwrap();
+        let dst_dir_c = CString::new(dst_dir.path().to_str().unwrap()).unwrap();
+        // Empty input array (count = 0) — should succeed with 0 copies.
+        let result = ff_parallel_copy(
+            ptr::null(),
+            0,
+            dst_dir_c.as_ptr(),
+            noop_batch_progress,
+            ptr::null_mut(),
+        );
+        assert_eq!(result, 0);
     }
 }

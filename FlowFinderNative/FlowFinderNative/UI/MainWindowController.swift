@@ -657,29 +657,32 @@ extension MainWindowController {
         guard !clipboardItems.isEmpty,
               let operation = clipboardOperation else { return }
         let destPath = activePaneViewModel.currentPath
+        let srcs = clipboardItems
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            for srcPath in self?.clipboardItems ?? [] {
-                let fileName = (srcPath as NSString).lastPathComponent
-                let dstPath = (destPath as NSString).appendingPathComponent(fileName)
-
-                do {
-                    switch operation {
-                    case .copy:
-                        try CoreBridge.shared.copyFile(src: srcPath, dst: dstPath)
-                    case .cut:
-                        try CoreBridge.shared.moveFile(src: srcPath, dst: dstPath)
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        self?.showError(error: error)
-                    }
-                    return
+            do {
+                let total = srcs.count
+                let success: Int
+                switch operation {
+                case .copy:
+                    success = try CoreBridge.shared.parallelCopy(srcs: srcs, dstDir: destPath)
+                case .cut:
+                    success = try CoreBridge.shared.parallelMove(srcs: srcs, dstDir: destPath)
                 }
-            }
 
-            DispatchQueue.main.async {
-                self?.activePaneViewModel.refresh()
+                DispatchQueue.main.async {
+                    self?.activePaneViewModel.refresh()
+                    if success < total {
+                        self?.showError(error: NSError(
+                            domain: "FlowFinder", code: -1,
+                            userInfo: [NSLocalizedDescriptionKey: "\(total - success) 个项目粘贴失败"])
+                        )
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self?.showError(error: error)
+                }
             }
         }
     }
