@@ -6,11 +6,11 @@
 //! 1. **Size grouping** — walk every regular file and group by size. Only
 //!    groups with more than one file can possibly contain duplicates, so
 //!    unique-size files are discarded immediately (no hashing at all).
-//! 2. **Partial hash** — for each size group, compute an MD5 digest of the
+//! 2. **Partial hash** — for each size group, compute a blake3 digest of the
 //!    first 4 KB + last 4 KB (or the entire file when smaller than 8 KB).
 //!    This eliminates most non-duplicates with minimal I/O.
 //! 3. **Full hash** — for files that agree on the partial hash, compute a
-//!    full MD5 digest to confirm they are truly identical.
+//!    full blake3 digest to confirm they are truly identical.
 //!
 //! Progress and discovered groups are streamed to the frontend through a
 //! Tauri [`Channel`]. Confirmed duplicate groups are emitted as
@@ -229,7 +229,7 @@ pub fn run_scan(
 
         // --------------------------------------------------------------
         // Phase 2 — partial hash (first 4 KB + last 4 KB, or full for
-        // files < 8 KB).  MD5 keeps this cheap.
+        // files < 8 KB).  blake3 keeps this cheap.
         // --------------------------------------------------------------
         let mut by_partial: HashMap<String, Vec<(String, u64)>> = HashMap::new();
         for (path, size) in size_group {
@@ -256,7 +256,7 @@ pub fn run_scan(
         }
 
         // --------------------------------------------------------------
-        // Phase 3 — full MD5 hash to confirm true duplicates.
+        // Phase 3 — full blake3 hash to confirm true duplicates.
         // --------------------------------------------------------------
         for partial_members in by_partial.into_values() {
             if partial_members.len() < 2 {
