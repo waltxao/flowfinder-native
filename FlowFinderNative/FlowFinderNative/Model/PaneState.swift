@@ -48,6 +48,9 @@ struct PaneState {
 public class PaneViewModel: ObservableObject {
     @Published var state: PaneState = PaneState()
 
+    /// 由 MainWindowController 注入，用于注册撤销/重做（per-window UndoManager）
+    weak var undoManager: UndoManager?
+
     var currentPath: String { state.path }
     var files: [FileEntry] { state.files }
     var selectedFiles: [FileEntry] { state.selectedFiles }
@@ -184,35 +187,52 @@ public class PaneViewModel: ObservableObject {
     func deleteSelected() {
         let toDelete = state.selectedFiles
         guard !toDelete.isEmpty else { return }
-        let paths = toDelete.map { $0.path }
-        do {
-            // rayon-backed parallel delete; directories are removed recursively.
-            let success = try CoreBridge.shared.parallelDelete(paths: paths)
-            // I2: invalidate the cache for the current directory so the
-            // subsequent loadDirectory() performs a live scan reflecting the
-            // deletion (best-effort — cache errors must not block the UI).
-            try? CoreBridge.shared.invalidateCache(path: state.path)
-            if success == 0 {
-                // All deletes failed — preserve selection so the user can retry.
-                // I3: surface the detailed FFI error (e.g. "5/5 failed: …")
-                // captured on the FFI thread by parallelDelete.
-                state.error = "删除失败：\(CoreBridge.shared.getLastError())"
-            } else {
-                // At least one delete succeeded: clear selection and refresh.
-                // (parallelDelete only returns a count, so we cannot map it
-                // back to specific surviving items — clear all when any
-                // succeeded, matching the pre-parallel behavior of refreshing
-                // after at least one successful removal.)
-                state.selectedFiles.removeAll()
-                loadDirectory()
-                if success < paths.count {
-                    // I3: surface the detailed partial-failure summary produced
-                    // by summarize_parallel_failures (e.g. "2/5 failed: …").
-                    state.error = "部分删除失败：\(CoreBridge.shared.getLastError())"
+
+        // 使用 FileManager.trashItem 移到废纸篓（与 macOS Finder 行为一致），
+        // 并保留 trashURL 用于撤销时恢复。trashItem 必须在主线程调用，
+        // deleteSelected 由菜单/右键菜单触发，已在主线程。
+        var trashedItems: [(originalPath: String, trashURL: URL)] = []
+        var failedCount = 0
+
+        for entry in toDelete {
+            let url = URL(fileURLWithPath: entry.path)
+            do {
+                var resultingURL: NSURL?
+                try FileManager.default.trashItem(at: url, resultingItemURL: &resultingURL)
+                if let trashURL = resultingURL as URL? {
+                    trashedItems.append((originalPath: entry.path, trashURL: trashURL))
                 }
+            } catch {
+                failedCount += 1
             }
-        } catch {
-            state.error = error.localizedDescription
+        }
+
+        if !trashedItems.isEmpty {
+            // 失效缓存以反映删除（best-effort，缓存错误不阻塞 UI）
+            let parentDir = (trashedItems[0].originalPath as NSString).deletingLastPathComponent
+            try? CoreBridge.shared.invalidateCache(path: parentDir)
+
+            // 注册撤销：从废纸篓恢复（moveItem 回原路径）
+            let items = trashedItems
+            undoManager?.registerUndo(withTarget: self) { vm in
+                for (originalPath, trashURL) in items {
+                    try? FileManager.default.moveItem(at: trashURL, to: URL(fileURLWithPath: originalPath))
+                }
+                // 失效缓存以反映恢复
+                if let firstPath = items.first?.originalPath {
+                    let dir = (firstPath as NSString).deletingLastPathComponent
+                    try? CoreBridge.shared.invalidateCache(path: dir)
+                }
+                vm.loadDirectory()
+            }
+            undoManager?.setActionName("删除 \(trashedItems.count) 个项目")
+
+            state.selectedFiles.removeAll()
+            loadDirectory()
+        }
+
+        if failedCount > 0 {
+            state.error = "\(failedCount) 个项目删除失败"
         }
     }
 
@@ -221,6 +241,14 @@ public class PaneViewModel: ObservableObject {
         let newPath = (dir as NSString).appendingPathComponent(newName)
         do {
             try CoreBridge.shared.renameFile(src: oldPath, dst: newPath)
+            // 注册撤销：undo 闭包内调用 renameFile 反向重命名，
+            // NSUndoManager 在 undo 模式下会将 registerUndo 加入 redo 栈，
+            // 因此 redo 自动支持，且不会无限递归。
+            let oldName = (oldPath as NSString).lastPathComponent
+            undoManager?.registerUndo(withTarget: self) { vm in
+                vm.renameFile(newPath, to: oldName)
+            }
+            undoManager?.setActionName("重命名")
             loadDirectory()
         } catch {
             state.error = error.localizedDescription

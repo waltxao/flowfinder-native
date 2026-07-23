@@ -300,7 +300,7 @@ public class FileGridView: NSView {
         guard !entries.isEmpty else { return }
         let alert = NSAlert()
         alert.messageText = entries.count == 1 ? "删除\"\(entries[0].name)\"？" : "删除 \(entries.count) 个项目？"
-        alert.informativeText = "此操作无法撤销。"
+        alert.informativeText = "此操作可通过 ⌘Z 撤销。"
         alert.alertStyle = .warning
         alert.addButton(withTitle: "删除")
         alert.addButton(withTitle: "取消")
@@ -478,8 +478,37 @@ extension FileGridView {
                 // (getLastError is read-once) before the async UI refresh.
                 let partialDetail = (success < total) ? CoreBridge.shared.getLastError() : ""
 
+                // 计算 dst 路径用于撤销注册（best-effort：假设 srcs 都成功）
+                let dstPaths = srcs.map { src -> String in
+                    let name = (src as NSString).lastPathComponent
+                    return (destPath as NSString).appendingPathComponent(name)
+                }
+
                 DispatchQueue.main.async {
                     self?.viewModel?.refresh()
+
+                    // 注册撤销（通过 viewModel?.undoManager 访问 per-window UndoManager）
+                    if success > 0, let vm = self?.viewModel, let undoManager = vm.undoManager {
+                        if isMove {
+                            let pairs = zip(srcs, dstPaths).map { (src: $0, dst: $1) }
+                            undoManager.registerUndo(withTarget: vm) { targetVM in
+                                for (src, dst) in pairs {
+                                    try? CoreBridge.shared.moveFile(src: dst, dst: src)
+                                }
+                                targetVM.refresh()
+                            }
+                            undoManager.setActionName("移动 \(success) 个项目")
+                        } else {
+                            undoManager.registerUndo(withTarget: vm) { targetVM in
+                                for dst in dstPaths {
+                                    try? CoreBridge.shared.deleteFile(path: dst)
+                                }
+                                targetVM.refresh()
+                            }
+                            undoManager.setActionName("复制 \(success) 个项目")
+                        }
+                    }
+
                     if success < total {
                         self?.showError(error: NSError(
                             domain: "FlowFinder", code: -1,

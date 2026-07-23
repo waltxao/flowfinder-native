@@ -13,6 +13,10 @@ public class MainWindowController: NSWindowController {
     private var activePane: PaneSide = .left
     private var cancellables = Set<AnyCancellable>()
 
+    /// 全局撤销/重做栈（per-window）。通过 override windowUndoManager 让 NSWindow 使用它，
+    /// Edit 菜单的 undo:/redo: 通过响应链自动路由到此 UndoManager。
+    private let undoManager = UndoManager()
+
     private var sidebarView: SidebarView!
     private var leftPaneContainer: NSView!
     private var rightPaneContainer: NSView!
@@ -181,6 +185,10 @@ public class MainWindowController: NSWindowController {
         paneSplitView.setHoldingPriority(.defaultHigh, forSubviewAt: 1)
 
         updateActivePaneVisual()
+
+        // 注入 UndoManager 到各 PaneViewModel，供 renameFile/deleteSelected 注册撤销
+        leftPaneViewModel.undoManager = undoManager
+        rightPaneViewModel.undoManager = undoManager
 
         // 初始 divider 位置
         DispatchQueue.main.async { [weak self] in
@@ -363,6 +371,27 @@ public class MainWindowController: NSWindowController {
         handleQuickLook()
     }
 
+    // MARK: - Undo / Redo
+
+    /// 让 NSWindow 使用本控制器的 UndoManager（响应链自动路由 undo:/redo:）
+    override public var windowUndoManager: UndoManager? {
+        undoManager
+    }
+
+    @objc func undo(_ sender: Any?) {
+        undoManager.undo()
+    }
+
+    @objc func redo(_ sender: Any?) {
+        undoManager.redo()
+    }
+
+    /// 刷新指定面板（用于 undo/redo 闭包执行后）
+    private func refreshPane(_ side: PaneSide) {
+        let vm = side == .left ? leftPaneViewModel : rightPaneViewModel
+        vm.refresh()
+    }
+
     // MARK: - Keyboard Events
 
     public override func keyDown(with event: NSEvent) {
@@ -440,6 +469,7 @@ public class MainWindowController: NSWindowController {
         let destPath = activePaneViewModel.currentPath
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            var copiedPaths: [String] = []
             for entry in selected {
                 let fileName = entry.name
                 let ext = (fileName as NSString).pathExtension
@@ -449,6 +479,7 @@ public class MainWindowController: NSWindowController {
 
                 do {
                     try CoreBridge.shared.copyFile(src: entry.path, dst: dstPath)
+                    copiedPaths.append(dstPath)
                 } catch {
                     DispatchQueue.main.async {
                         self?.showError(error: error)
@@ -457,8 +488,22 @@ public class MainWindowController: NSWindowController {
                 }
             }
 
-            DispatchQueue.main.async {
-                self?.activePaneViewModel.refresh()
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.activePaneViewModel.refresh()
+
+                // 注册撤销：删除复制的文件
+                if !copiedPaths.isEmpty {
+                    let copied = copiedPaths
+                    let activeSide = self.activePane
+                    self.undoManager.registerUndo(withTarget: self) { ctrl in
+                        for dst in copied {
+                            try? CoreBridge.shared.deleteFile(path: dst)
+                        }
+                        ctrl.refreshPane(activeSide)
+                    }
+                    self.undoManager.setActionName("复制 \(copied.count) 个项目")
+                }
             }
         }
     }
@@ -690,10 +735,42 @@ extension MainWindowController {
                 // own failure path. Appended to the user-facing alert.
                 let partialDetail = (success < total) ? CoreBridge.shared.getLastError() : ""
 
-                DispatchQueue.main.async {
-                    self?.activePaneViewModel.refresh()
+                // 计算 dst 路径用于撤销注册（best-effort：假设 srcs 都成功）
+                let dstPaths = srcs.map { src -> String in
+                    let name = (src as NSString).lastPathComponent
+                    return (destPath as NSString).appendingPathComponent(name)
+                }
+
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.activePaneViewModel.refresh()
+
+                    // 注册撤销（仅当至少一个成功；best-effort）
+                    if success > 0 {
+                        if isMove {
+                            let pairs = zip(srcs, dstPaths).map { (src: $0, dst: $1) }
+                            self.undoManager.registerUndo(withTarget: self) { ctrl in
+                                for (src, dst) in pairs {
+                                    try? CoreBridge.shared.moveFile(src: dst, dst: src)
+                                }
+                                ctrl.refreshPane(.left)
+                                ctrl.refreshPane(.right)
+                            }
+                            self.undoManager.setActionName("移动 \(success) 个项目")
+                        } else {
+                            self.undoManager.registerUndo(withTarget: self) { ctrl in
+                                for dst in dstPaths {
+                                    try? CoreBridge.shared.deleteFile(path: dst)
+                                }
+                                ctrl.refreshPane(.left)
+                                ctrl.refreshPane(.right)
+                            }
+                            self.undoManager.setActionName("复制 \(success) 个项目")
+                        }
+                    }
+
                     if success < total {
-                        self?.showError(error: NSError(
+                        self.showError(error: NSError(
                             domain: "FlowFinder", code: -1,
                             userInfo: [NSLocalizedDescriptionKey: "\(total - success) 个项目粘贴失败：\(partialDetail)"])
                         )
@@ -770,6 +847,8 @@ extension MainWindowController {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             var successCount = 0
             var failedFiles: [(String, Error)] = []
+            // 记录每个成功操作的 (src, dst) 用于撤销注册
+            var movedOrCopied: [(src: String, dst: String)] = []
 
             for entry in selectedFiles {
                 let srcPath = entry.path
@@ -794,6 +873,7 @@ extension MainWindowController {
                     } else {
                         try CoreBridge.shared.copyFile(src: srcPath, dst: dstPath)
                     }
+                    movedOrCopied.append((src: srcPath, dst: dstPath))
                     successCount += 1
                 } catch {
                     failedFiles.append((fileName, error))
@@ -805,6 +885,31 @@ extension MainWindowController {
                 // 刷新双方面板
                 sourceVM.refresh()
                 destVM.refresh()
+
+                // 注册撤销（仅对成功的操作）
+                if !movedOrCopied.isEmpty {
+                    let sourceSide: PaneSide = side == "left" ? .left : .right
+                    let destSide: PaneSide = side == "left" ? .right : .left
+                    let items = movedOrCopied
+                    if isMove {
+                        self.undoManager.registerUndo(withTarget: self) { ctrl in
+                            for (src, dst) in items {
+                                try? CoreBridge.shared.moveFile(src: dst, dst: src)
+                            }
+                            ctrl.refreshPane(sourceSide)
+                            ctrl.refreshPane(destSide)
+                        }
+                        self.undoManager.setActionName("移动 \(items.count) 个项目")
+                    } else {
+                        self.undoManager.registerUndo(withTarget: self) { ctrl in
+                            for (_, dst) in items {
+                                try? CoreBridge.shared.deleteFile(path: dst)
+                            }
+                            ctrl.refreshPane(destSide)
+                        }
+                        self.undoManager.setActionName("复制 \(items.count) 个项目")
+                    }
+                }
 
                 // 显示错误（如果有）
                 if !failedFiles.isEmpty {
