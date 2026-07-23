@@ -46,6 +46,7 @@
 		FF0000000000000000200037 /* GlassSectionMaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000000000000000200038; };
 		FF0000000000000000200039 /* BreadcrumbBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000000000000000020003A; };
 		FF000000000000000020003B /* ExpandableDetailsBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000000000000000020003C; };
+		FF000000000000000020003D /* BatchRenameWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF000000000000000020003E; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -90,6 +91,7 @@
 		FF0000000000000000200038 /* GlassSectionMaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassSectionMaskView.swift; sourceTree = "<group>"; };
 		FF000000000000000020003A /* BreadcrumbBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreadcrumbBar.swift; sourceTree = "<group>"; };
 		FF000000000000000020003C /* ExpandableDetailsBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableDetailsBar.swift; sourceTree = "<group>"; };
+		FF000000000000000020003E /* BatchRenameWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchRenameWindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,6 +141,7 @@
 				FF0000150000000000000015 /* SidebarView.swift */,
 				FF0000000000000000200038 /* GlassSectionMaskView.swift */,
 				FF000000000000000020003A /* BreadcrumbBar.swift */,
+				FF000000000000000020003E /* BatchRenameWindowController.swift */,
 				FF0000160000000000000016 /* MainWindowController.swift */,
 							FF000000000000000020001C /* AppearanceSettingsView.swift */,
 				FF000000000000000020001E /* DetailsBar.swift */,
@@ -340,6 +343,7 @@
 				FF0000000000000000200037 /* GlassSectionMaskView.swift in Sources */,
 				FF0000000000000000200039 /* BreadcrumbBar.swift in Sources */,
 				FF000000000000000020003B /* ExpandableDetailsBar.swift in Sources */,
+				FF000000000000000020003D /* BatchRenameWindowController.swift in Sources */,
 );
 			runOnlyForDeploymentPostprocessing = 0;
 		};

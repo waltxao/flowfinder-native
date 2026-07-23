@@ -54,6 +54,7 @@ class MainMenu {
         editMenu.addItem(withTitle: "全选", action: #selector(MainWindowController.menuSelectAll(_:)), keyEquivalent: "a")
         editMenu.addItem(.separator())
         editMenu.addItem(withTitle: "重命名", action: #selector(MainWindowController.menuRename(_:)), keyEquivalent: "")
+        editMenu.addItem(withTitle: "批量重命名...", action: #selector(MainWindowController.menuBatchRename(_:)), keyEquivalent: "")
         editMenu.addItem(.separator())
         let copyToOther = editMenu.addItem(withTitle: "复制到另一面板", action: #selector(MainWindowController.menuCopyToOther(_:)), keyEquivalent: "c")
         copyToOther.keyEquivalentModifierMask = [.command, .shift]

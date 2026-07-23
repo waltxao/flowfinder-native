@@ -1020,6 +1020,19 @@ extension MainWindowController {
         }
     }
 
+    @objc func menuBatchRename(_ sender: Any?) {
+        let selected = activePaneViewModel.selectedFiles
+        guard selected.count >= 2 else { return }
+        BatchRenameWindowController.shared.showWindow(selectedFiles: selected, paneViewModel: activePaneViewModel)
+    }
+
+    func validateMenuItem(_ item: NSMenuItem) -> Bool {
+        if item.action == #selector(menuBatchRename(_:)) {
+            return activePaneViewModel.selectedFiles.count >= 2
+        }
+        return true
+    }
+
     @objc func menuListView(_ sender: Any?) {
         activePaneViewModel.setViewMode(.list)
         updateViewMode(side: activePane, mode: .list)
