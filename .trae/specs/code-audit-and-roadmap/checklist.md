@@ -22,11 +22,11 @@
 
 ## P2 架构完善验证
 
-- [ ] ff_cache_get / ff_cache_put 使用 sqlite_cache 模块（或新增独立 FFI）
-- [ ] 目录缓存数据持久化到 SQLite 数据库文件
-- [ ] ff_parallel_copy / ff_parallel_move / ff_parallel_delete FFI 函数存在且可调用
-- [ ] 批量文件操作使用 rayon 并行（4 线程）
-- [ ] dedup_engine.rs 中无 "MD5" 注释残留（仅 blake3）
+- [x] ff_cache_get / ff_cache_put 使用 sqlite_cache 模块（或新增独立 FFI）
+- [x] 目录缓存数据持久化到 SQLite 数据库文件
+- [x] ff_parallel_copy / ff_parallel_move / ff_parallel_delete FFI 函数存在且可调用
+- [x] 批量文件操作使用 rayon 并行（4 线程）
+- [x] dedup_engine.rs 中无 "MD5" 注释残留（仅 blake3）
 
 ## P3 新功能验证
 

@@ -53,7 +53,7 @@
   - 保留 `dir_cache` 内存缓存作为一级缓存
   - 验证：`cargo test` + 目录缓存持久化到磁盘
 
-- [ ] Task 9: 接入 parallel_ops 到 FFI
+- [x] Task 9: 接入 parallel_ops 到 FFI
   - 新增 `ff_parallel_copy`/`ff_parallel_move`/`ff_parallel_delete` FFI 函数
   - Swift 侧 CoreBridge 添加对应调用
   - 批量文件操作改用并行版本
