@@ -663,19 +663,39 @@ extension MainWindowController {
             do {
                 let total = srcs.count
                 let success: Int
+                let isMove: Bool
                 switch operation {
                 case .copy:
+                    isMove = false
                     success = try CoreBridge.shared.parallelCopy(srcs: srcs, dstDir: destPath)
                 case .cut:
+                    isMove = true
                     success = try CoreBridge.shared.parallelMove(srcs: srcs, dstDir: destPath)
                 }
+
+                // I2: invalidate cache so the refresh sees the new state.
+                // Destination always changes; for a move each source parent
+                // directory also changes (items left those dirs). Best-effort.
+                try? CoreBridge.shared.invalidateCache(path: destPath)
+                if isMove {
+                    let sourceDirs = Set(srcs.map { ($0 as NSString).deletingLastPathComponent })
+                    for dir in sourceDirs where !dir.isEmpty {
+                        try? CoreBridge.shared.invalidateCache(path: dir)
+                    }
+                }
+
+                // I3: capture the detailed partial-failure message now
+                // (getLastError is read-once) before the async UI refresh —
+                // refresh → listDirectory would otherwise consume it on its
+                // own failure path. Appended to the user-facing alert.
+                let partialDetail = (success < total) ? CoreBridge.shared.getLastError() : ""
 
                 DispatchQueue.main.async {
                     self?.activePaneViewModel.refresh()
                     if success < total {
                         self?.showError(error: NSError(
                             domain: "FlowFinder", code: -1,
-                            userInfo: [NSLocalizedDescriptionKey: "\(total - success) 个项目粘贴失败"])
+                            userInfo: [NSLocalizedDescriptionKey: "\(total - success) 个项目粘贴失败：\(partialDetail)"])
                         )
                     }
                 }

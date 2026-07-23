@@ -2894,4 +2894,74 @@ mod tests {
         );
         assert_eq!(result, 0);
     }
+
+    /// Partial-failure path: of 5 source paths, only the first 3 exist on
+    /// disk. `ff_parallel_copy` must return 3 (the success count), and
+    /// `ff_last_error()` must contain the `summarize_parallel_failures`
+    /// summary (`"2/5 failed: ..."`).
+    #[test]
+    fn test_ff_parallel_copy_partial_failure() {
+        use std::fs;
+        use tempfile::tempdir;
+
+        let src_dir = tempdir().unwrap();
+        let dst_dir = tempdir().unwrap();
+
+        // Build 5 source paths but only write content to the first 3.
+        // Indices 3 and 4 are never created on disk, so their copies fail.
+        let srcs: Vec<String> = (0..5)
+            .map(|i| {
+                let path = src_dir.path().join(format!("partial_fail_{}.txt", i));
+                if i < 3 {
+                    fs::write(&path, format!("content-{}", i)).unwrap();
+                }
+                path.to_str().unwrap().to_string()
+            })
+            .collect();
+
+        let dst_dir_c = CString::new(dst_dir.path().to_str().unwrap()).unwrap();
+        let (_cstrings, ptrs) = build_c_string_array(&srcs);
+
+        let result = ff_parallel_copy(
+            ptrs.as_ptr(),
+            ptrs.len(),
+            dst_dir_c.as_ptr(),
+            noop_batch_progress,
+            ptr::null_mut(),
+        );
+
+        // Exactly the first 3 sources exist; the other 2 fail.
+        assert_eq!(
+            result, 3,
+            "expected 3 of 5 copies to succeed (sources 3 and 4 do not exist)"
+        );
+
+        // `summarize_parallel_failures` must have populated `last_error`
+        // with a string of the form `"2/5 failed: ..."`.
+        let err_ptr = ff_last_error();
+        assert!(
+            !err_ptr.is_null(),
+            "ff_last_error must be set on partial failure"
+        );
+        let err_msg = unsafe { CStr::from_ptr(err_ptr).to_string_lossy().to_string() };
+        ff_free_string(err_ptr);
+        assert!(
+            err_msg.contains("2/5 failed"),
+            "error message should contain '2/5 failed', got: {}",
+            err_msg
+        );
+
+        // The 3 successful copies must land in the destination directory
+        // with the correct contents.
+        for i in 0..3 {
+            let dst = dst_dir.path().join(format!("partial_fail_{}.txt", i));
+            assert!(dst.exists(), "destination file {} should exist", i);
+            assert_eq!(
+                fs::read_to_string(&dst).unwrap(),
+                format!("content-{}", i),
+                "destination content must match source for file {}",
+                i,
+            );
+        }
+    }
 }

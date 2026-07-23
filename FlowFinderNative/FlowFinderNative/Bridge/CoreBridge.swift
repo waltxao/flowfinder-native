@@ -44,6 +44,12 @@ private final class ThreadSafeFFIResult<T> {
         defer { lock.unlock() }
         return value
     }
+
+    func clear() {
+        lock.lock()
+        defer { lock.unlock() }
+        value = nil
+    }
 }
 
 // MARK: - FFI Callbacks (Global C Functions)
@@ -277,6 +283,13 @@ public final class CoreBridge {
     // MARK: - Directory Operations
 
     /// List directory contents via FFI
+    ///
+    /// Two-tier cache lookup: the L1 (in-memory) and L2 (SQLite persistent)
+    /// caches are consulted first via `ff_cache_get`. On a cache hit the
+    /// entries are delivered directly from the cache, skipping the live
+    /// filesystem scan. On a cache miss the directory is scanned with
+    /// `ff_list_dir` and, on success, the result is written back to the
+    /// cache via `ff_cache_put` so subsequent navigations hit the cache.
     /// - Parameter path: Directory path to list
     /// - Returns: Array of FileEntry objects
     /// - Throws: CoreBridgeError if operation fails
@@ -304,17 +317,44 @@ public final class CoreBridge {
         ffiQueue.async {
             defer { semaphore.signal() }
 
-            var context = EntryCollectorContext()
-            context.entries = []
+            // ── L1 + L2 cache lookup ───────────────────────────────────
+            // ff_cache_get delivers cached entries through the same
+            // entryCallback used by ff_list_dir. A return of FF_OK (0) with
+            // a non-empty entry list is a cache hit — skip the live scan.
+            // Any other return (including FF_ERR_NOT_FOUND) is a miss.
+            var cacheContext = EntryCollectorContext()
+            cacheContext.entries = []
+            let cacheResult = path.withCString { cPath in
+                withUnsafeMutablePointer(to: &cacheContext) { contextPtr in
+                    ff_cache_get(cPath, entryCallback, contextPtr)
+                }
+            }
 
+            if cacheResult == 0 && !cacheContext.entries.isEmpty {
+                // Cache hit — use the cached entries directly.
+                ffiResult = 0
+                ffiEntries = cacheContext.entries
+                return
+            }
+
+            // ── Cache miss — live scan via ff_list_dir ─────────────────
+            var scanContext = EntryCollectorContext()
+            scanContext.entries = []
             let result = path.withCString { cPath in
-                withUnsafeMutablePointer(to: &context) { contextPtr in
+                withUnsafeMutablePointer(to: &scanContext) { contextPtr in
                     ff_list_dir(cPath, entryCallback, contextPtr)
                 }
             }
 
             ffiResult = result
-            ffiEntries = context.entries
+            ffiEntries = scanContext.entries
+
+            // On a successful scan, populate the cache (best-effort) so the
+            // next navigation hits the cache. Failures are swallowed —
+            // cache write errors must not break directory listing.
+            if result == 0 && !scanContext.entries.isEmpty {
+                self.populateCache(path: path, entries: scanContext.entries)
+            }
         }
 
         semaphore.wait()
@@ -335,6 +375,56 @@ public final class CoreBridge {
         }
 
         return entries
+    }
+
+    /// Best-effort cache population. Builds an `FFEntryRef` array (with
+    /// heap-allocated C strings) from `entries` and calls `ff_cache_put`.
+    /// All allocations are freed before returning; cache write failures
+    /// are silently ignored — navigation must not fail because the cache
+    /// could not be written.
+    private func populateCache(path: String, entries: [FileEntry]) {
+        var refs: [FFEntryRef] = []
+        refs.reserveCapacity(entries.count)
+        var allocated: [UnsafeMutablePointer<CChar>] = []
+        allocated.reserveCapacity(entries.count * 3)
+
+        for entry in entries {
+            guard let namePtr = strdup(entry.name),
+                  let pathPtr = strdup(entry.path),
+                  let extPtr = strdup(entry.fileExtension) else {
+                // Allocation failed — free what we have and bail out
+                // (best-effort: skip caching this directory).
+                for p in allocated { free(p) }
+                return
+            }
+            allocated.append(namePtr)
+            allocated.append(pathPtr)
+            allocated.append(extPtr)
+
+            refs.append(FFEntryRef(
+                name: namePtr,
+                path: pathPtr,
+                `extension`: extPtr,
+                isDir: entry.isDirectory,
+                isFile: entry.isFile,
+                isSymlink: entry.isSymlink,
+                isHidden: entry.isHidden,
+                isSystemProtected: entry.isSystemProtected,
+                size: entry.size,
+                modified: Int64(entry.modificationDate.timeIntervalSince1970),
+                created: Int64(entry.creationDate.timeIntervalSince1970)
+            ))
+        }
+
+        // ff_cache_put copies the entries into Rust-owned memory, so the
+        // C strings we allocated are safe to free immediately after the call.
+        let _ = path.withCString { cPath in
+            refs.withUnsafeBufferPointer { buffer in
+                ff_cache_put(cPath, buffer.baseAddress, refs.count)
+            }
+        }
+
+        for p in allocated { free(p) }
     }
 
     // MARK: - File Operations
@@ -575,6 +665,14 @@ public final class CoreBridge {
                 }
             }
             ffiResult = result
+            // I3: capture ff_last_error() on this FFI thread so callers on
+            // the UI thread can retrieve partial-failure details ("N/M
+            // failed: …") via getLastError(). Only stored when non-empty so
+            // a fully-successful batch does not mask a later error.
+            let captured = self.captureLastErrorFFI()
+            if !captured.isEmpty {
+                self.lastErrorMessage.set(captured)
+            }
         }
 
         semaphore.wait()
@@ -626,6 +724,14 @@ public final class CoreBridge {
                 }
             }
             ffiResult = result
+            // I3: capture ff_last_error() on this FFI thread so callers on
+            // the UI thread can retrieve partial-failure details ("N/M
+            // failed: …") via getLastError(). Only stored when non-empty so
+            // a fully-successful batch does not mask a later error.
+            let captured = self.captureLastErrorFFI()
+            if !captured.isEmpty {
+                self.lastErrorMessage.set(captured)
+            }
         }
 
         semaphore.wait()
@@ -675,6 +781,14 @@ public final class CoreBridge {
                 )
             }
             ffiResult = result
+            // I3: capture ff_last_error() on this FFI thread so callers on
+            // the UI thread can retrieve partial-failure details ("N/M
+            // failed: …") via getLastError(). Only stored when non-empty so
+            // a fully-successful batch does not mask a later error.
+            let captured = self.captureLastErrorFFI()
+            if !captured.isEmpty {
+                self.lastErrorMessage.set(captured)
+            }
         }
 
         semaphore.wait()
@@ -1127,9 +1241,33 @@ public final class CoreBridge {
 
     // MARK: - Error Handling
 
-    /// Get the last error message from the Rust core
+    /// Get the last error message from the Rust core.
+    ///
+    /// Rust stores `last_error` in thread-local storage, so a direct
+    /// `ff_last_error()` call only returns a value when called on the same
+    /// thread that ran the FFI function. Because every CoreBridge FFI call
+    /// runs on the serial `ffiQueue`, calling `ff_last_error()` from the
+    /// UI thread returns nothing.
+    ///
+    /// To bridge that gap, the parallel batch methods (parallelCopy /
+    /// parallelMove / parallelDelete) capture `ff_last_error()` on the
+    /// FFI thread right after the call and stash the result in
+    /// `lastErrorMessage`. This getter prefers that captured value
+    /// (read-once: it is cleared after being returned so subsequent calls
+    /// do not observe a stale message) and falls back to a direct
+    /// `ff_last_error()` call for non-parallel methods.
     /// - Returns: Error message string
     func getLastError() -> String {
+        // Prefer the captured error from the FFI thread (set by parallel ops).
+        // Read-once: clear after reading so stale messages don't leak across
+        // unrelated operations.
+        if let captured = lastErrorMessage.get() {
+            lastErrorMessage.clear()
+            if !captured.isEmpty {
+                return captured
+            }
+        }
+
         guard let cString = ff_last_error() else {
             return "Unknown error"
         }
@@ -1140,6 +1278,19 @@ public final class CoreBridge {
         // Free the C string allocated by Rust
         ff_free_string(UnsafeMutablePointer(mutating: cString))
 
+        return message
+    }
+
+    /// Capture the current thread's `ff_last_error()` as a Swift String.
+    /// Must be called on the same thread that ran the FFI function (i.e.
+    /// inside `ffiQueue.async`). Returns an empty string when no error is
+    /// set. The C string returned by Rust is freed before returning.
+    private func captureLastErrorFFI() -> String {
+        guard let cString = ff_last_error() else {
+            return ""
+        }
+        let message = String(cString: cString)
+        ff_free_string(UnsafeMutablePointer(mutating: cString))
         return message
     }
 

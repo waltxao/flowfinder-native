@@ -22,11 +22,40 @@ CREATE TABLE IF NOT EXISTS dir_cache (
 CREATE INDEX IF NOT EXISTS idx_dir_cache_dir ON dir_cache(dir_path);
 ";
 
+/// Schema version tracked via `PRAGMA user_version`. Bump this whenever the
+/// `dir_cache` schema changes — `init_cache` will drop and recreate the
+/// table when the on-disk version does not match.
+const SCHEMA_VERSION: i32 = 1;
+
 pub fn init_cache(db_path: &str) -> io::Result<()> {
     let conn = Connection::open(db_path)
         .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
-    conn.execute_batch(SCHEMA)
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+
+    // `PRAGMA user_version` defaults to 0 on a fresh DB. A query failure
+    // (extremely unlikely for this built-in pragma) is treated as version 0
+    // so we fall through to the drop+recreate path.
+    let current_version: i32 = conn
+        .query_row("PRAGMA user_version", [], |r| r.get(0))
+        .unwrap_or(0);
+
+    if current_version != SCHEMA_VERSION {
+        // Version mismatch (including first launch on a fresh DB where
+        // user_version is 0): drop any existing table and recreate with the
+        // current schema, then stamp the new version.
+        conn.execute_batch("DROP TABLE IF EXISTS dir_cache;")
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+        conn.execute_batch(SCHEMA)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+        conn.execute_batch(&format!("PRAGMA user_version = {};", SCHEMA_VERSION))
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+    } else {
+        // Same version — ensure the table exists (handles the edge case
+        // where user_version was set but the table was deleted externally).
+        // `CREATE TABLE IF NOT EXISTS` is a no-op when the table already
+        // matches the schema.
+        conn.execute_batch(SCHEMA)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+    }
     Ok(())
 }
 
@@ -182,5 +211,47 @@ mod tests {
         assert!(is_cache_fresh(db_path, "/tmp", 0).unwrap());
         // mtime 远在未来，应不是 fresh
         assert!(!is_cache_fresh(db_path, "/tmp", 9999999999).unwrap());
+    }
+
+    #[test]
+    fn test_init_cache_sets_user_version() {
+        let tmp = NamedTempFile::new().unwrap();
+        let db_path = tmp.path().to_str().unwrap();
+
+        // First init — fresh DB (user_version defaults to 0), should drop,
+        // recreate, and stamp user_version = SCHEMA_VERSION.
+        init_cache(db_path).expect("first init_cache should succeed");
+
+        let conn = Connection::open(db_path).expect("open db");
+        let version: i32 = conn
+            .query_row("PRAGMA user_version", [], |r| r.get(0))
+            .expect("query user_version");
+        assert_eq!(
+            version, SCHEMA_VERSION,
+            "init_cache must stamp user_version to SCHEMA_VERSION"
+        );
+        drop(conn);
+
+        // Second init on the same DB — version matches, so it must be
+        // idempotent (no drop, just CREATE TABLE IF NOT EXISTS) and the
+        // version must remain SCHEMA_VERSION.
+        init_cache(db_path).expect("second init_cache should succeed (idempotent)");
+
+        let conn = Connection::open(db_path).expect("reopen db");
+        let version: i32 = conn
+            .query_row("PRAGMA user_version", [], |r| r.get(0))
+            .expect("query user_version again");
+        assert_eq!(
+            version, SCHEMA_VERSION,
+            "user_version must remain SCHEMA_VERSION after idempotent re-init"
+        );
+
+        // The table must still exist and be usable after the second init.
+        let entries = vec![make_test_entry("versioned.txt")];
+        cache_put(db_path, "/tmp", &entries)
+            .expect("cache_put must work after idempotent re-init");
+        let result = cache_get(db_path, "/tmp").expect("cache_get must work");
+        assert!(result.is_some(), "entries should survive idempotent re-init");
+        assert_eq!(result.unwrap().len(), 1);
     }
 }

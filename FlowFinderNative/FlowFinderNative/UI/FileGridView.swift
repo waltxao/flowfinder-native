@@ -463,12 +463,27 @@ extension FileGridView {
                     success = try CoreBridge.shared.parallelCopy(srcs: srcs, dstDir: destPath)
                 }
 
+                // I2: invalidate cache so the refresh reflects the new state.
+                // Destination always changes; for a move each source parent
+                // directory also changes (items left those dirs). Best-effort.
+                try? CoreBridge.shared.invalidateCache(path: destPath)
+                if isMove {
+                    let sourceDirs = Set(srcs.map { ($0 as NSString).deletingLastPathComponent })
+                    for dir in sourceDirs where !dir.isEmpty {
+                        try? CoreBridge.shared.invalidateCache(path: dir)
+                    }
+                }
+
+                // I3: capture the detailed partial-failure message now
+                // (getLastError is read-once) before the async UI refresh.
+                let partialDetail = (success < total) ? CoreBridge.shared.getLastError() : ""
+
                 DispatchQueue.main.async {
                     self?.viewModel?.refresh()
                     if success < total {
                         self?.showError(error: NSError(
                             domain: "FlowFinder", code: -1,
-                            userInfo: [NSLocalizedDescriptionKey: "\(total - success) 个项目操作失败"])
+                            userInfo: [NSLocalizedDescriptionKey: "\(total - success) 个项目操作失败：\(partialDetail)"])
                         )
                     }
                 }

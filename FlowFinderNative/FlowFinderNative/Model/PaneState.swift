@@ -188,9 +188,15 @@ public class PaneViewModel: ObservableObject {
         do {
             // rayon-backed parallel delete; directories are removed recursively.
             let success = try CoreBridge.shared.parallelDelete(paths: paths)
+            // I2: invalidate the cache for the current directory so the
+            // subsequent loadDirectory() performs a live scan reflecting the
+            // deletion (best-effort — cache errors must not block the UI).
+            try? CoreBridge.shared.invalidateCache(path: state.path)
             if success == 0 {
                 // All deletes failed — preserve selection so the user can retry.
-                state.error = "\(paths.count) 个项目删除失败"
+                // I3: surface the detailed FFI error (e.g. "5/5 failed: …")
+                // captured on the FFI thread by parallelDelete.
+                state.error = "删除失败：\(CoreBridge.shared.getLastError())"
             } else {
                 // At least one delete succeeded: clear selection and refresh.
                 // (parallelDelete only returns a count, so we cannot map it
@@ -200,7 +206,9 @@ public class PaneViewModel: ObservableObject {
                 state.selectedFiles.removeAll()
                 loadDirectory()
                 if success < paths.count {
-                    state.error = "\(paths.count - success) 个项目删除失败"
+                    // I3: surface the detailed partial-failure summary produced
+                    // by summarize_parallel_failures (e.g. "2/5 failed: …").
+                    state.error = "部分删除失败：\(CoreBridge.shared.getLastError())"
                 }
             }
         } catch {
